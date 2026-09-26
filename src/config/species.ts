@@ -1,20 +1,26 @@
 import type { Species } from '../types';
 
-const PLACEHOLDER_SOURCE =
-  'PLACEHOLDER — threshold not taken from a published ballistic or species reference';
+const ENERGY_PLACEHOLDER =
+  'PLACEHOLDER — pellet-energy minimum is not taken from a published lethality table';
+
+const ROSTER =
+  'Tom Roster, 2016 Nontoxic Shot Lethality Table, reprinted by Montana Fish, Wildlife & Parks (pattern count in a 30-inch circle)';
 
 /**
  * Tunable species thresholds.
- * Every seed value is a PLACEHOLDER until `source` cites published data.
+ * Pattern counts for duck, goose, and pheasant use the low end of Roster's published ranges.
+ * Turkey uses a 10-inch counting circle. Energy minimums stay marked until sourced.
  */
 export const SPECIES: readonly Species[] = [
   {
     id: 'duck',
     name: 'Duck',
     minPelletEnergyFtLb: 2,
-    minPatternHits: 80,
+    minPatternHits: 85,
+    patternCircleIn: 30,
     typicalRangeYd: 35,
-    source: PLACEHOLDER_SOURCE,
+    source: `${ROSTER}. Large ducks (mallard, pintail, gadwall): 85–90 pellets. This app uses 85.`,
+    energySource: ENERGY_PLACEHOLDER,
     waterfowl: true,
   },
   {
@@ -22,17 +28,21 @@ export const SPECIES: readonly Species[] = [
     name: 'Goose',
     minPelletEnergyFtLb: 3.25,
     minPatternHits: 50,
+    patternCircleIn: 30,
     typicalRangeYd: 45,
-    source: PLACEHOLDER_SOURCE,
+    source: `${ROSTER}. Large geese: 50–55 pellets. This app uses 50.`,
+    energySource: ENERGY_PLACEHOLDER,
     waterfowl: true,
   },
   {
     id: 'pheasant',
     name: 'Pheasant',
     minPelletEnergyFtLb: 1.25,
-    minPatternHits: 55,
-    typicalRangeYd: 30,
-    source: PLACEHOLDER_SOURCE,
+    minPatternHits: 90,
+    patternCircleIn: 30,
+    typicalRangeYd: 35,
+    source: `${ROSTER}. Ring-necked pheasants: 90–95 pellets. This app uses 90.`,
+    energySource: ENERGY_PLACEHOLDER,
     waterfowl: false,
   },
   {
@@ -40,8 +50,10 @@ export const SPECIES: readonly Species[] = [
     name: 'Grouse',
     minPelletEnergyFtLb: 0.9,
     minPatternHits: 35,
+    patternCircleIn: 30,
     typicalRangeYd: 25,
-    source: PLACEHOLDER_SOURCE,
+    source: 'PLACEHOLDER — grouse is not listed in Roster’s 2016 table',
+    energySource: ENERGY_PLACEHOLDER,
     waterfowl: false,
   },
   {
@@ -49,8 +61,11 @@ export const SPECIES: readonly Species[] = [
     name: 'Turkey',
     minPelletEnergyFtLb: 1.4,
     minPatternHits: 100,
+    patternCircleIn: 10,
     typicalRangeYd: 40,
-    source: PLACEHOLDER_SOURCE,
+    source:
+      '10-inch pattern-board goal of 100 pellets, the usual turkey load test. Roster 2016 instead lists 210–230 pellets in a 30-inch circle for head-and-neck shots at 20–40 yards.',
+    energySource: ENERGY_PLACEHOLDER,
     waterfowl: false,
   },
 ];
@@ -69,6 +84,10 @@ export function isPlaceholderSource(source: string): boolean {
   return source.toUpperCase().includes('PLACEHOLDER');
 }
 
+export function speciesNeedsSource(species: Species): boolean {
+  return isPlaceholderSource(species.source) || isPlaceholderSource(species.energySource);
+}
+
 export function unsourcedSpecies(species: readonly Species[] = SPECIES): Species[] {
-  return species.filter((item) => isPlaceholderSource(item.source));
+  return species.filter(speciesNeedsSource);
 }

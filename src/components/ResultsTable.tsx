@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { materialById } from '../config/materials';
-import { formatEnergy, formatUsd, formatVelocity } from '../format';
+import { formatEnergy, formatMargin, formatUsd, formatVelocity } from '../format';
 import type { LoadResult } from '../types';
 
 type SortKey = 'cost' | 'energy';
@@ -48,10 +48,16 @@ function ShopLink({ url }: { url?: string }) {
 
 export function ResultsTable({
   results,
-  cheapestId,
+  highlightId,
+  highlightLabel,
+  shelf,
+  onToggleShelf,
 }: {
   results: LoadResult[];
-  cheapestId: string | null;
+  highlightId: string | null;
+  highlightLabel: string;
+  shelf: readonly string[];
+  onToggleShelf: (loadId: string) => void;
 }) {
   const [sortKey, setSortKey] = useState<SortKey>('cost');
   const [direction, setDirection] = useState<'asc' | 'desc'>('asc');
@@ -123,7 +129,14 @@ export function ResultsTable({
         <>
           <ul className="mt-4 space-y-2 md:hidden">
             {sorted.map((result) => (
-              <ResultCard key={result.load.id} result={result} cheapest={result.load.id === cheapestId} />
+              <ResultCard
+                key={result.load.id}
+                result={result}
+                highlighted={result.load.id === highlightId}
+                highlightLabel={highlightLabel}
+                onShelf={shelf.includes(result.load.id)}
+                onToggleShelf={onToggleShelf}
+              />
             ))}
           </ul>
           <div className="mt-4 hidden overflow-x-auto md:block">
@@ -148,7 +161,8 @@ export function ResultsTable({
               <tbody>
                 {sorted.map((result) => {
                   const material = materialById(result.load.material);
-                  const cheapest = result.load.id === cheapestId;
+                  const highlighted = result.load.id === highlightId;
+                  const onShelf = shelf.includes(result.load.id);
                   return (
                     <tr
                       key={result.load.id}
@@ -156,11 +170,19 @@ export function ResultsTable({
                     >
                       <td className="py-3 pr-3 font-semibold text-ink">
                         {result.load.label}
-                        {cheapest ? (
+                        {highlighted ? (
                           <span className="ml-2 rounded-sm bg-brass/15 px-1.5 py-0.5 text-xs font-semibold uppercase text-brass">
-                            Cheapest
+                            {highlightLabel}
                           </span>
                         ) : null}
+                        <button
+                          type="button"
+                          className="mt-2 block min-h-11 rounded-md border border-line bg-paper px-3 text-sm font-semibold text-ink"
+                          aria-pressed={onShelf}
+                          onClick={() => onToggleShelf(result.load.id)}
+                        >
+                          {onShelf ? 'On shelf' : 'Add to shelf'}
+                        </button>
                       </td>
                       <td className="py-3 pr-3">
                         {material.name}
@@ -174,6 +196,9 @@ export function ResultsTable({
                       <td className="py-3 pr-3 tabular-nums">
                         {formatEnergy(result.energyAtRangeFtLb)}
                         <span className="mt-0.5 block text-xs">{formatVelocity(result.velocityAtRangeFps)}</span>
+                        <span className="mt-0.5 block text-xs">
+                          {formatMargin(result.energyMarginFtLb, result.hitMargin)}
+                        </span>
                       </td>
                       <td className="py-3 pr-3 tabular-nums">~{result.expectedHits}</td>
                       <td className="py-3 pr-3">
@@ -197,7 +222,19 @@ export function ResultsTable({
   );
 }
 
-function ResultCard({ result, cheapest }: { result: LoadResult; cheapest: boolean }) {
+function ResultCard({
+  result,
+  highlighted,
+  highlightLabel,
+  onShelf,
+  onToggleShelf,
+}: {
+  result: LoadResult;
+  highlighted: boolean;
+  highlightLabel: string;
+  onShelf: boolean;
+  onToggleShelf: (loadId: string) => void;
+}) {
   const material = materialById(result.load.material);
   return (
     <li className={`rounded-md border border-line p-3 ${result.passes ? 'bg-paper' : 'bg-mist'}`}>
@@ -206,7 +243,7 @@ function ResultCard({ result, cheapest }: { result: LoadResult; cheapest: boolea
           <p className="font-semibold text-ink">{result.load.label}</p>
           <p className="mt-0.5 text-sm">
             {material.name}
-            {cheapest ? ' · Cheapest' : ''} · {result.pelletCount} pellets
+            {highlighted ? ` · ${highlightLabel}` : ''} · {result.pelletCount} pellets
           </p>
           {!material.waterfowlLegal ? (
             <p className="mt-1 text-xs font-semibold text-brass">Not legal for waterfowl</p>
@@ -218,14 +255,25 @@ function ResultCard({ result, cheapest }: { result: LoadResult; cheapest: boolea
         <p>
           <span className="block text-xs uppercase tracking-wide">Energy</span>
           {formatEnergy(result.energyAtRangeFtLb)} · {formatVelocity(result.velocityAtRangeFps)}
+          <span className="mt-0.5 block text-xs">{formatMargin(result.energyMarginFtLb, result.hitMargin)}</span>
         </p>
         <p>
           <span className="block text-xs uppercase tracking-wide">Hits (est.)</span>~{result.expectedHits}
         </p>
       </div>
-      <div className="mt-2 flex items-center justify-between gap-2">
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
         <Status result={result} />
-        <ShopLink url={result.load.affiliateUrl} />
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            className="min-h-11 rounded-md border border-line bg-paper px-3 text-sm font-semibold"
+            aria-pressed={onShelf}
+            onClick={() => onToggleShelf(result.load.id)}
+          >
+            {onShelf ? 'On shelf' : 'Add to shelf'}
+          </button>
+          <ShopLink url={result.load.affiliateUrl} />
+        </div>
       </div>
     </li>
   );

@@ -1,6 +1,9 @@
 import { materialById } from './materials';
 import type { FactoryLoad, Gauge, MaterialId, ShotSize } from '../types';
 
+/** Seed prices are not a live quote. Tunable. */
+export const SEED_PRICED_ON = '2026-09-26';
+
 /**
  * Tunable seed prices and factory performance.
  * Velocities fall back to the material default. Prices are USD per shell.
@@ -61,6 +64,7 @@ export const FACTORY_LOADS: readonly FactoryLoad[] = [
   shell('12-tss-3-1125-7', '12ga 3in 1-1/8oz #7 TSS', 12, 'tss', '7', 1.125, 6.5),
   shell('12-tss-3-1125-9', '12ga 3in 1-1/8oz #9 TSS', 12, 'tss', '9', 1.125, 6.75),
   shell('12-tss-3-125-9', '12ga 3in 1-1/4oz #9 TSS', 12, 'tss', '9', 1.25, 8.4),
+  shell('12-tss-35-2-9', '12ga 3.5in 2oz #9 TSS', 12, 'tss', '9', 2, 11.5),
   shell('12-lead-275-125-4', '12ga 2-3/4in 1-1/4oz #4 Lead', 12, 'lead', '4', 1.25, 0.9),
   shell('12-lead-275-125-6', '12ga 2-3/4in 1-1/4oz #6 Lead', 12, 'lead', '6', 1.25, 0.85),
   shell('12-lead-275-118-75', '12ga 2-3/4in 1-1/8oz #7.5 Lead', 12, 'lead', '7.5', 1.125, 0.75),

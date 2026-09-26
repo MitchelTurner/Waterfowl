@@ -19,7 +19,19 @@ export function App() {
 
   const species = speciesById(inputs.speciesId);
   const results = useMemo(() => evaluateMatching(inputs), [inputs]);
-  const recommendation = useMemo(() => recommend(results, species), [results, species]);
+  const recommendation = useMemo(
+    () => recommend(results, species, inputs.rankBy),
+    [results, species, inputs.rankBy],
+  );
+  const focusLoadIds = recommendation.options.map((option) => option.load.id);
+  if (recommendation.closestMiss) focusLoadIds.push(recommendation.closestMiss.load.id);
+
+  function toggleShelf(loadId: string) {
+    const shelf = inputs.shelf.includes(loadId)
+      ? inputs.shelf.filter((id) => id !== loadId)
+      : [...inputs.shelf, loadId];
+    update({ shelf });
+  }
 
   async function copyLink() {
     const query = serializeInputs(inputs);
@@ -87,24 +99,33 @@ export function App() {
           species={species}
           rangeYd={inputs.rangeYd}
           recommendation={recommendation}
+          rankBy={inputs.rankBy}
+          onPrice={setPrice}
         />
-        <ResultsTable results={results} cheapestId={recommendation.options[0]?.load.id ?? null} />
+        <ResultsTable
+          results={results}
+          highlightId={recommendation.options[0]?.load.id ?? null}
+          highlightLabel={inputs.rankBy === 'margin' ? 'Best margin' : 'Cheapest'}
+          shelf={inputs.shelf}
+          onToggleShelf={toggleShelf}
+        />
         <MaterialChart />
         <details className="rounded-md border border-line bg-card p-4 text-sm shadow-card">
           <summary className="min-h-12 cursor-pointer font-semibold">How this estimate works</summary>
           <div className="mt-2 space-y-2 text-ink/85">
             <p>Pellet mass comes from shot diameter and material density. Count is payload divided by that mass.</p>
             <p>
-              Velocity uses quadratic drag with one drag coefficient. Energy is computed from the downrange
-              velocity. A later velocity-based drag model can replace that constant without changing the screen.
+              Velocity uses a sphere drag coefficient that changes with speed, and air density from elevation and
+              temperature. Energy is computed from the downrange velocity.
             </p>
             <p>
-              Pattern percent starts from the choke at 40 yards, shifts with range, and is clamped. Hits are that
-              percent of the pellet count, labeled as an estimate.
+              Pattern percent is a count inside the species circle. The pattern widens with range and depends on
+              gauge. Hits are rounded and labeled as an estimate.
             </p>
             <p>
-              A load passes when pellet energy and estimated hits both meet the species threshold. The card keeps
-              the cheapest passing load of each material.
+              A load passes when pellet energy and estimated hits both meet the species threshold. Price rank
+              keeps the cheapest passing load of each material. Margin rank keeps the load with the most room
+              above both thresholds.
             </p>
           </div>
         </details>
@@ -115,6 +136,7 @@ export function App() {
       <PriceDrawer
         open={pricesOpen}
         inputs={inputs}
+        focusLoadIds={focusLoadIds}
         onClose={closePrices}
         onPrice={setPrice}
         onClear={clearPrices}

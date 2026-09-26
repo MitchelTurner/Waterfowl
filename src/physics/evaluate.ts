@@ -2,7 +2,7 @@ import { FACTORY_LOADS } from '../config/loads';
 import { materialById } from '../config/materials';
 import { speciesById } from '../config/species';
 import { diameterInches } from '../config/shotSizes';
-import type { EvaluationInputs, FactoryLoad, LoadResult, Species } from '../types';
+import type { EvaluationInputs, FactoryLoad, LoadResult, RankBy, Species } from '../types';
 import { downrangePerformance } from './ballistics';
 import { countPellets, pelletMassGrains, pelletMassGrams } from './pellet';
 import { expectedHits, patternPercent } from './pattern';
@@ -31,6 +31,14 @@ export function isEligible(load: FactoryLoad, inputs: EvaluationInputs): boolean
   const material = materialById(load.material);
   if (species.waterfowl && !material.waterfowlLegal) return false;
   if (inputs.olderGun && !material.vintageGunSafe) return false;
+  if (inputs.materials !== null && !inputs.materials.includes(load.material)) return false;
+  if (inputs.onlyShelf && !inputs.shelf.includes(load.id)) return false;
+  if (
+    inputs.maxPrice !== null &&
+    shellCost(load, inputs.priceOverrides) > inputs.maxPrice
+  ) {
+    return false;
+  }
   return true;
 }
 
@@ -52,14 +60,20 @@ export function evaluate(load: FactoryLoad, inputs: EvaluationInputs): LoadResul
     massGrams,
     muzzleVelocityFps: load.velocityFps,
     rangeYd: inputs.rangeYd,
+    elevationFt: inputs.elevationFt,
+    temperatureF: inputs.temperatureF,
   });
   const patternPct = patternPercent({
     choke: inputs.choke,
     patternModifier: material.patternModifier,
     rangeYd: inputs.rangeYd,
+    circleInches: species.patternCircleIn,
+    gauge: inputs.gauge,
   });
   const hits = expectedHits(pelletCount, patternPct);
   const threshold = meetsSpeciesThreshold(flight.energyFtLb, hits, species);
+  const energyMarginFtLb = flight.energyFtLb - species.minPelletEnergyFtLb;
+  const hitMargin = hits - species.minPatternHits;
   return {
     load,
     pelletMassGr: pelletMassGrains(massGrams),
@@ -71,6 +85,15 @@ export function evaluate(load: FactoryLoad, inputs: EvaluationInputs): LoadResul
     meetsPattern: threshold.meetsPattern,
     passes: threshold.passes,
     costPerShell: shellCost(load, inputs.priceOverrides),
+    energyMarginFtLb,
+    hitMargin,
+    marginScore: missScore(
+      {
+        energyAtRangeFtLb: flight.energyFtLb,
+        expectedHits: hits,
+      },
+      species,
+    ),
   };
 }
 
@@ -82,13 +105,16 @@ export function evaluateMatching(
 }
 
 export interface Recommendation {
-  /** Cheapest passing load for each material, lowest price first. */
+  /** One passing load per material. Price rank is cheapest first. Margin rank is widest first. */
   options: LoadResult[];
   /** Set only when nothing passes. */
   closestMiss: LoadResult | null;
 }
 
-function missScore(result: LoadResult, species: Species): number {
+function missScore(
+  result: { energyAtRangeFtLb: number; expectedHits: number },
+  species: Species,
+): number {
   const energyRatio =
     species.minPelletEnergyFtLb <= 0
       ? Number.POSITIVE_INFINITY
@@ -100,7 +126,27 @@ function missScore(result: LoadResult, species: Species): number {
   return Math.min(energyRatio, patternRatio);
 }
 
-export function recommend(results: readonly LoadResult[], species: Species): Recommendation {
+function betterPass(candidate: LoadResult, current: LoadResult, rankBy: RankBy): boolean {
+  if (rankBy === 'margin') {
+    if (candidate.marginScore !== current.marginScore) {
+      return candidate.marginScore > current.marginScore;
+    }
+    if (candidate.costPerShell !== current.costPerShell) {
+      return candidate.costPerShell < current.costPerShell;
+    }
+    return candidate.load.id < current.load.id;
+  }
+  if (candidate.costPerShell !== current.costPerShell) {
+    return candidate.costPerShell < current.costPerShell;
+  }
+  return candidate.load.id < current.load.id;
+}
+
+export function recommend(
+  results: readonly LoadResult[],
+  species: Species,
+  rankBy: RankBy = 'price',
+): Recommendation {
   const bestByMaterial = new Map<string, LoadResult>();
   let closest: LoadResult | null = null;
   let closestScore = Number.NEGATIVE_INFINITY;
@@ -108,12 +154,7 @@ export function recommend(results: readonly LoadResult[], species: Species): Rec
   for (const result of results) {
     if (result.passes) {
       const current = bestByMaterial.get(result.load.material);
-      const cheaper = current === undefined || result.costPerShell < current.costPerShell;
-      const tie =
-        current !== undefined &&
-        result.costPerShell === current.costPerShell &&
-        result.load.id < current.load.id;
-      if (cheaper || tie) {
+      if (current === undefined || betterPass(result, current, rankBy)) {
         bestByMaterial.set(result.load.material, result);
       }
       continue;
@@ -129,9 +170,12 @@ export function recommend(results: readonly LoadResult[], species: Species): Rec
     }
   }
 
-  const options = [...bestByMaterial.values()].sort(
-    (a, b) => a.costPerShell - b.costPerShell || a.load.label.localeCompare(b.load.label),
-  );
+  const options = [...bestByMaterial.values()].sort((a, b) => {
+    if (rankBy === 'margin' && a.marginScore !== b.marginScore) {
+      return b.marginScore - a.marginScore;
+    }
+    return a.costPerShell - b.costPerShell || a.load.label.localeCompare(b.load.label);
+  });
 
   return {
     options,
