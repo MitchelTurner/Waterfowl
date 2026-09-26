@@ -13,6 +13,9 @@ export interface UrlState {
   sortDir: 'asc' | 'desc'
 }
 
+const validGauges: FactoryLoad['gauge'][] = [12, 16, 20, 28, 410]
+const validChokes: Choke[] = ['cyl', 'ic', 'mod', 'im', 'full']
+
 const defaultState: UrlState = {
   speciesId: speciesList[0].id,
   rangeYd: speciesList[0].typicalRangeYd,
@@ -34,7 +37,7 @@ export function serializeUrlState(state: UrlState): string {
   params.set('sortBy', state.sortBy)
   params.set('sortDir', state.sortDir)
   if (Object.keys(state.priceOverrides).length > 0) {
-    params.set('prices', encodeURIComponent(JSON.stringify(state.priceOverrides)))
+    params.set('prices', JSON.stringify(state.priceOverrides))
   }
   return params.toString()
 }
@@ -42,12 +45,13 @@ export function serializeUrlState(state: UrlState): string {
 export function parseUrlState(search: string): UrlState {
   const params = new URLSearchParams(search)
   const parsedGauge = Number(params.get('gauge')) as FactoryLoad['gauge']
+  const parsedChoke = params.get('choke') as Choke | null
 
   let parsedPrices: Record<string, number> = {}
   const rawPrices = params.get('prices')
   if (rawPrices) {
     try {
-      parsedPrices = JSON.parse(decodeURIComponent(rawPrices)) as Record<string, number>
+      parsedPrices = JSON.parse(rawPrices) as Record<string, number>
     } catch {
       parsedPrices = {}
     }
@@ -56,8 +60,8 @@ export function parseUrlState(search: string): UrlState {
   return {
     speciesId: params.get('species') ?? defaultState.speciesId,
     rangeYd: Number(params.get('range') ?? defaultState.rangeYd),
-    gauge: [12, 16, 20, 28, 410].includes(parsedGauge) ? parsedGauge : defaultState.gauge,
-    choke: (params.get('choke') as Choke) ?? defaultState.choke,
+    gauge: validGauges.includes(parsedGauge) ? parsedGauge : defaultState.gauge,
+    choke: parsedChoke && validChokes.includes(parsedChoke) ? parsedChoke : defaultState.choke,
     olderGun: params.get('olderGun') === '1',
     priceOverrides: parsedPrices,
     sortBy: params.get('sortBy') === 'energy' ? 'energy' : 'cost',

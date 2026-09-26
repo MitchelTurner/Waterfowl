@@ -8,6 +8,14 @@ interface ResultsTableProps {
   onSortChange: (sortBy: 'cost' | 'energy') => void
 }
 
+function ariaSortValue(sortBy: 'cost' | 'energy', activeSortBy: 'cost' | 'energy', sortDir: 'asc' | 'desc') {
+  if (sortBy !== activeSortBy) {
+    return 'none'
+  }
+
+  return sortDir === 'asc' ? 'ascending' : 'descending'
+}
+
 export function ResultsTable({ results, sortBy, sortDir, onSortChange }: ResultsTableProps) {
   return (
     <section className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -17,15 +25,23 @@ export function ResultsTable({ results, sortBy, sortDir, onSortChange }: Results
             <th className="px-3 py-2">Load</th>
             <th className="px-3 py-2">Material</th>
             <th className="px-3 py-2">Pellets</th>
-            <th className="px-3 py-2">
-              <button type="button" onClick={() => onSortChange('energy')}>
+            <th className="px-3 py-2" aria-sort={ariaSortValue('energy', sortBy, sortDir)}>
+              <button
+                type="button"
+                onClick={() => onSortChange('energy')}
+                aria-label={`Sort by energy, currently ${ariaSortValue('energy', sortBy, sortDir)}`}
+              >
                 Energy @ range {sortBy === 'energy' ? `(${sortDir})` : ''}
               </button>
             </th>
             <th className="px-3 py-2">Expected hits (est.)</th>
             <th className="px-3 py-2">Pass</th>
-            <th className="px-3 py-2">
-              <button type="button" onClick={() => onSortChange('cost')}>
+            <th className="px-3 py-2" aria-sort={ariaSortValue('cost', sortBy, sortDir)}>
+              <button
+                type="button"
+                onClick={() => onSortChange('cost')}
+                aria-label={`Sort by cost, currently ${ariaSortValue('cost', sortBy, sortDir)}`}
+              >
                 $/shell {sortBy === 'cost' ? `(${sortDir})` : ''}
               </button>
             </th>

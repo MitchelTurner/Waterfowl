@@ -17,4 +17,13 @@ describe('URL state', () => {
     const encoded = serializeUrlState(state)
     expect(parseUrlState(encoded)).toEqual(state)
   })
+
+  it('falls back safely for malformed query values', () => {
+    const parsed = parseUrlState('?gauge=10&choke=extra-full&prices=not-json&sortBy=what')
+
+    expect(parsed.gauge).toBe(12)
+    expect(parsed.choke).toBe('mod')
+    expect(parsed.priceOverrides).toEqual({})
+    expect(parsed.sortBy).toBe('cost')
+  })
 })
