@@ -30,8 +30,7 @@ export function ChokeHelpPanel({ current }: { current: Choke }) {
       <ul className="mt-1 list-disc space-y-1 pl-4 text-ink/85">
         {UNLISTED_CHOKES.map((item) => (
           <li key={item.name}>
-            {item.name} is {item.nearest}. Choose the nearest name. A real choke tighter than the one
-            you pick will pattern tighter than this estimate.
+            <span className="font-semibold">{item.name}.</span> {item.detail}
           </li>
         ))}
       </ul>

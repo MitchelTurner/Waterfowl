@@ -37,11 +37,20 @@ export const CHOKE_OPTIONS: readonly { id: Choke; label: string; summary: string
   },
 ];
 
-/** Names a hunter may see that are not in the dropdown, and which listed choke is nearest. */
-export const UNLISTED_CHOKES: readonly { name: string; nearest: string }[] = [
-  { name: 'Skeet', nearest: 'between cylinder and improved cylinder' },
-  { name: 'Light modified', nearest: 'between improved cylinder and modified' },
-  { name: 'Extra-full and turkey', nearest: 'tighter than full' },
+/** Names a hunter may see that are not in the dropdown. */
+export const UNLISTED_CHOKES: readonly { name: string; detail: string }[] = [
+  {
+    name: 'Skeet',
+    detail: 'Sits between cylinder and improved cylinder. Choose the nearer of those two.',
+  },
+  {
+    name: 'Light modified',
+    detail: 'Sits between improved cylinder and modified. Choose the nearer of those two.',
+  },
+  {
+    name: 'Extra-full and turkey',
+    detail: 'Tighter than full. Full is the nearest name here, and this estimate will be more open than that choke.',
+  },
 ];
 
 export const CHOKE_IDENTIFY = [
