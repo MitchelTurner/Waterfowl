@@ -83,7 +83,7 @@ function App() {
                       ...prev,
                       priceOverrides: {
                         ...prev.priceOverrides,
-                        [load.id]: Number.isFinite(value) ? value : load.pricePerShell,
+                        [load.id]: Number.isFinite(value) ? Math.max(0, value) : load.pricePerShell,
                       },
                     }))
                   }}

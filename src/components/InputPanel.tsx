@@ -88,7 +88,7 @@ export function InputPanel(props: InputPanelProps) {
           checked={props.olderGun}
           onChange={(event) => props.onChange({ olderGun: event.target.checked })}
         />
-        Older gun — can't shoot steel
+        Older gun — no steel/hevi/TSS
       </label>
     </section>
   )

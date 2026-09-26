@@ -32,7 +32,11 @@ export function ResultsTable({ results, sortBy, sortDir, onSortChange }: Results
               Pellets
             </th>
             <th className="px-3 py-2" scope="col" aria-sort={ariaSortValue('energy', sortBy, sortDir)}>
-              <button type="button" onClick={() => onSortChange('energy')}>
+              <button
+                type="button"
+                onClick={() => onSortChange('energy')}
+                aria-label={`Sort by energy at range, currently ${ariaSortValue('energy', sortBy, sortDir)}`}
+              >
                 Energy @ range
                 <span className="sr-only"> sorted {ariaSortValue('energy', sortBy, sortDir)}</span>
                 {sortBy === 'energy' ? ` (${sortDir})` : ''}
@@ -45,7 +49,11 @@ export function ResultsTable({ results, sortBy, sortDir, onSortChange }: Results
               Pass
             </th>
             <th className="px-3 py-2" scope="col" aria-sort={ariaSortValue('cost', sortBy, sortDir)}>
-              <button type="button" onClick={() => onSortChange('cost')}>
+              <button
+                type="button"
+                onClick={() => onSortChange('cost')}
+                aria-label={`Sort by cost per shell, currently ${ariaSortValue('cost', sortBy, sortDir)}`}
+              >
                 $/shell
                 <span className="sr-only"> sorted {ariaSortValue('cost', sortBy, sortDir)}</span>
                 {sortBy === 'cost' ? ` (${sortDir})` : ''}
