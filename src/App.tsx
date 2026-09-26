@@ -103,11 +103,21 @@ function App() {
         sortBy={state.sortBy}
         sortDir={state.sortDir}
         onSortChange={(sortBy) =>
-          setState((prev) => ({
-            ...prev,
-            sortBy,
-            sortDir: prev.sortBy === sortBy && prev.sortDir === 'asc' ? 'desc' : 'asc',
-          }))
+          setState((prev) => {
+            if (prev.sortBy === sortBy) {
+              return {
+                ...prev,
+                sortBy,
+                sortDir: prev.sortDir === 'asc' ? 'desc' : 'asc',
+              }
+            }
+
+            return {
+              ...prev,
+              sortBy,
+              sortDir: 'asc',
+            }
+          })
         }
       />
 

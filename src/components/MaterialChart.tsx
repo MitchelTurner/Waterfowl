@@ -30,7 +30,7 @@ export function MaterialChart() {
           </li>
         ))}
       </ul>
-      <p className="mt-3 text-xs text-slate-600">Lead reference line: {leadDensity.toFixed(2)} g/cc</p>
+      <p className="mt-3 text-xs text-slate-600">Lead reference density: {leadDensity.toFixed(2)} g/cc</p>
     </section>
   )
 }

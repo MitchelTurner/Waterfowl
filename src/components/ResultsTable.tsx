@@ -35,7 +35,7 @@ export function ResultsTable({ results, sortBy, sortDir, onSortChange }: Results
               <button
                 type="button"
                 onClick={() => onSortChange('energy')}
-                aria-label={`Sort by energy at range, currently ${ariaSortValue('energy', sortBy, sortDir)}`}
+                aria-label={`Sort by energy at range, activate to sort ${sortBy === 'energy' && sortDir === 'asc' ? 'descending' : 'ascending'}`}
               >
                 Energy @ range
                 <span className="sr-only"> sorted {ariaSortValue('energy', sortBy, sortDir)}</span>
@@ -52,7 +52,7 @@ export function ResultsTable({ results, sortBy, sortDir, onSortChange }: Results
               <button
                 type="button"
                 onClick={() => onSortChange('cost')}
-                aria-label={`Sort by cost per shell, currently ${ariaSortValue('cost', sortBy, sortDir)}`}
+                aria-label={`Sort by cost per shell, activate to sort ${sortBy === 'cost' && sortDir === 'asc' ? 'descending' : 'ascending'}`}
               >
                 $/shell
                 <span className="sr-only"> sorted {ariaSortValue('cost', sortBy, sortDir)}</span>
