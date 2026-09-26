@@ -78,14 +78,21 @@ function App() {
                   className="mt-1 block w-full rounded border border-slate-300 p-2"
                   value={state.priceOverrides[load.id] ?? load.pricePerShell}
                   onChange={(event) => {
-                    const value = Number(event.target.value)
-                    setState((prev) => ({
-                      ...prev,
-                      priceOverrides: {
-                        ...prev.priceOverrides,
-                        [load.id]: Number.isFinite(value) ? Math.max(0, value) : load.pricePerShell,
-                      },
-                    }))
+                    const rawValue = event.target.value
+                    setState((prev) => {
+                      const nextOverrides = { ...prev.priceOverrides }
+                      if (rawValue.trim() === '') {
+                        delete nextOverrides[load.id]
+                      } else {
+                        const value = Number(rawValue)
+                        nextOverrides[load.id] = Number.isFinite(value) ? Math.max(0, value) : load.pricePerShell
+                      }
+
+                      return {
+                        ...prev,
+                        priceOverrides: nextOverrides,
+                      }
+                    })
                   }}
                 />
               </label>

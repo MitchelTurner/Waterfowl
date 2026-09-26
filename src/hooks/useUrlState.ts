@@ -77,9 +77,11 @@ export function parseUrlState(search: string): UrlState {
     }
   }
 
+  const safeRange = Number.isFinite(parsedRange) ? Math.min(60, Math.max(15, parsedRange)) : defaultState.rangeYd
+
   return {
     speciesId: parsedSpeciesId && validSpeciesIds.has(parsedSpeciesId) ? parsedSpeciesId : defaultState.speciesId,
-    rangeYd: Number.isFinite(parsedRange) ? parsedRange : defaultState.rangeYd,
+    rangeYd: safeRange,
     gauge: validGauges.includes(parsedGauge) ? parsedGauge : defaultState.gauge,
     choke: parsedChoke && validChokes.includes(parsedChoke) ? parsedChoke : defaultState.choke,
     olderGun: params.get('olderGun') === '1',

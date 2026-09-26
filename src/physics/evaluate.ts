@@ -59,7 +59,7 @@ export function recommendLoads(results: LoadResult[], speciesId: string): Recomm
   const passing = results.filter((result) => result.passes)
   const cheapestByMaterial = new Map<string, LoadResult>()
 
-  for (const result of passing.sort((a, b) => a.costPerShell - b.costPerShell)) {
+  for (const result of [...passing].sort((a, b) => a.costPerShell - b.costPerShell)) {
     if (!cheapestByMaterial.has(result.load.material)) {
       cheapestByMaterial.set(result.load.material, result)
     }

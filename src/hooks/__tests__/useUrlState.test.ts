@@ -30,4 +30,9 @@ describe('URL state', () => {
     expect(parsed.priceOverrides).toEqual({ '12ga-steel-2-125': 2.3 })
     expect(parsed.sortBy).toBe('cost')
   })
+
+  it('clamps numeric range values into supported bounds', () => {
+    expect(parseUrlState('?range=-5').rangeYd).toBe(15)
+    expect(parseUrlState('?range=75').rangeYd).toBe(60)
+  })
 })
