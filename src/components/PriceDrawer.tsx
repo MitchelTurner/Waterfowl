@@ -1,17 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
-import { GAUGES, type AppInputs } from '../types';
-import { FACTORY_LOADS } from '../config/loads';
+import { GAUGES, type AppInputs, type FactoryLoad } from '../types';
+import { FACTORY_LOADS, SEED_PRICED_ON } from '../config/loads';
 import { formatGauge, formatUsd } from '../format';
 
 export function PriceDrawer({
   open,
   inputs,
+  focusLoadIds,
   onClose,
   onPrice,
   onClear,
 }: {
   open: boolean;
   inputs: AppInputs;
+  focusLoadIds: readonly string[];
   onClose: () => void;
   onPrice: (loadId: string, price: number | null) => void;
   onClear: () => void;
@@ -38,6 +40,56 @@ export function PriceDrawer({
   if (!open) return null;
 
   const overrideCount = Object.keys(inputs.priceOverrides).length;
+  const focusLoads = focusLoadIds
+    .map((id) => FACTORY_LOADS.find((load) => load.id === id))
+    .filter((load): load is FactoryLoad => load !== undefined);
+
+  function renderLoad(load: FactoryLoad, idPrefix: string) {
+    const edited = inputs.priceOverrides[load.id] !== undefined;
+    const value =
+      drafts[load.id] !== undefined
+        ? drafts[load.id]
+        : (inputs.priceOverrides[load.id] ?? load.pricePerShell).toFixed(2);
+    return (
+      <li key={`${idPrefix}-${load.id}`} className="grid grid-cols-[minmax(0,1fr)_6.5rem] items-center gap-3">
+        <label htmlFor={`${idPrefix}-${load.id}`} className="text-sm leading-snug">
+          {load.label}
+          {edited ? (
+            <span className="mt-0.5 block text-xs font-semibold text-brass">
+              Edited · seed {formatUsd(load.pricePerShell)}
+            </span>
+          ) : null}
+        </label>
+        <input
+          id={`${idPrefix}-${load.id}`}
+          className="min-h-12 w-full rounded-md border border-line bg-card px-2 text-base tabular-nums"
+          inputMode="decimal"
+          min={0}
+          step={0.01}
+          type="number"
+          autoComplete="off"
+          value={value}
+          onChange={(event) => {
+            const raw = event.target.value;
+            setDrafts((current) => ({ ...current, [load.id]: raw }));
+            const parsed = Number(raw);
+            if (raw.trim() === '' || !Number.isFinite(parsed) || parsed < 0) return;
+            const cents = Math.round(parsed * 100) / 100;
+            const seed = Math.round(load.pricePerShell * 100) / 100;
+            onPrice(load.id, cents === seed ? null : cents);
+          }}
+          onBlur={() => {
+            setDrafts((current) => {
+              if (current[load.id] === undefined) return current;
+              const next = { ...current };
+              delete next[load.id];
+              return next;
+            });
+          }}
+        />
+      </li>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-30 flex items-end justify-center bg-ink/50" onClick={onClose}>
@@ -54,7 +106,7 @@ export function PriceDrawer({
               Edit prices
             </h2>
             <p className="mt-1 text-sm text-ink/80">
-              Seed prices you can override. Nothing here is a live feed. Overrides stay in the link.
+              Seed prices dated {SEED_PRICED_ON}. Not a live quote. Overrides stay in the link.
             </p>
           </div>
           <button
@@ -78,60 +130,19 @@ export function PriceDrawer({
           </button>
         </div>
         <div className="overflow-y-auto px-4 py-3">
+          {focusLoads.length > 0 ? (
+            <section className="mb-4">
+              <h3 className="text-sm font-semibold uppercase tracking-wide">Comparing now</h3>
+              <ul className="mt-2 space-y-3">{focusLoads.map((load) => renderLoad(load, 'focus-price'))}</ul>
+            </section>
+          ) : null}
           {GAUGES.map((gauge) => {
             const loads = FACTORY_LOADS.filter((load) => load.gauge === gauge);
             if (loads.length === 0) return null;
             return (
               <section key={gauge} className="mb-4">
                 <h3 className="text-sm font-semibold uppercase tracking-wide">{formatGauge(gauge)}</h3>
-                <ul className="mt-2 space-y-3">
-                  {loads.map((load) => {
-                    const edited = inputs.priceOverrides[load.id] !== undefined;
-                    const value =
-                      drafts[load.id] !== undefined
-                        ? drafts[load.id]
-                        : (inputs.priceOverrides[load.id] ?? load.pricePerShell).toFixed(2);
-                    return (
-                      <li key={load.id} className="grid grid-cols-[minmax(0,1fr)_6.5rem] items-center gap-3">
-                        <label htmlFor={`price-${load.id}`} className="text-sm leading-snug">
-                          {load.label}
-                          {edited ? (
-                            <span className="mt-0.5 block text-xs font-semibold text-brass">
-                              Edited · seed {formatUsd(load.pricePerShell)}
-                            </span>
-                          ) : null}
-                        </label>
-                        <input
-                          id={`price-${load.id}`}
-                          className="min-h-12 w-full rounded-md border border-line bg-card px-2 text-base tabular-nums"
-                          inputMode="decimal"
-                          min={0}
-                          step={0.01}
-                          type="number"
-                          autoComplete="off"
-                          value={value}
-                          onChange={(event) => {
-                            const raw = event.target.value;
-                            setDrafts((current) => ({ ...current, [load.id]: raw }));
-                            const parsed = Number(raw);
-                            if (raw.trim() === '' || !Number.isFinite(parsed) || parsed < 0) return;
-                            const cents = Math.round(parsed * 100) / 100;
-                            const seed = Math.round(load.pricePerShell * 100) / 100;
-                            onPrice(load.id, cents === seed ? null : cents);
-                          }}
-                          onBlur={() => {
-                            setDrafts((current) => {
-                              if (current[load.id] === undefined) return current;
-                              const next = { ...current };
-                              delete next[load.id];
-                              return next;
-                            });
-                          }}
-                        />
-                      </li>
-                    );
-                  })}
-                </ul>
+                <ul className="mt-2 space-y-3">{loads.map((load) => renderLoad(load, 'price'))}</ul>
               </section>
             );
           })}

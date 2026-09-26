@@ -2,8 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { PHYSICS } from '../../config/physics';
 import { diameterInches } from '../../config/shotSizes';
 import {
+  airDensityKgPerM3,
+  constantCd,
   downrangePerformance,
+  dragK,
   kineticEnergyFtLb,
+  sphereDragCoefficient,
   velocityAtRangeMps,
 } from '../ballistics';
 import { pelletMassGrams } from '../pellet';
@@ -67,5 +71,26 @@ describe('downrange velocity and energy', () => {
     expect(
       velocityAtRangeMps(muzzleMps, 0, diameterIn * PHYSICS.metersPerInch, massKg),
     ).toBeCloseTo(muzzleMps, 8);
+  });
+
+  it('raises drag through the transonic band', () => {
+    expect(sphereDragCoefficient(1.2)).toBeGreaterThan(sphereDragCoefficient(0.4));
+  });
+
+  it('thins the air with elevation and heat', () => {
+    const sea = airDensityKgPerM3(0, 59);
+    expect(sea).toBeCloseTo(1.225, 2);
+    expect(airDensityKgPerM3(5000, 59)).toBeLessThan(sea);
+    expect(airDensityKgPerM3(0, 90)).toBeLessThan(sea);
+  });
+
+  it('matches the closed form when the drag coefficient is constant', () => {
+    const diameterM = diameterIn * PHYSICS.metersPerInch;
+    const massKg = massGrams / PHYSICS.gramsPerKilogram;
+    const muzzle = muzzleFps * PHYSICS.metersPerFoot;
+    const rangeM = 40 * PHYSICS.metersPerYard;
+    const closed = muzzle * Math.exp(-dragK(diameterM, massKg, 0.5) * rangeM);
+    const stepped = velocityAtRangeMps(muzzle, rangeM, diameterM, massKg, constantCd(0.5));
+    expect(stepped).toBeCloseTo(closed, 6);
   });
 });

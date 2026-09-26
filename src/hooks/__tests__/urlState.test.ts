@@ -7,6 +7,7 @@ describe('url state', () => {
   it('round-trips inputs, including price overrides', () => {
     const loadId = FACTORY_LOADS[0]!.id;
     const inputs = {
+      ...defaultInputs(),
       speciesId: 'goose',
       rangeYd: 50,
       gauge: 20 as const,
@@ -16,6 +17,24 @@ describe('url state', () => {
     };
     expect(parseInputs(serializeInputs(inputs))).toEqual(inputs);
     expect(parseInputs(`?${serializeInputs(inputs)}`)).toEqual(inputs);
+  });
+
+  it('round-trips elevation, temperature, filters, shelf, and margin rank', () => {
+    const loadId = FACTORY_LOADS[1]!.id;
+    const inputs = {
+      ...defaultInputs(),
+      elevationFt: 5000,
+      temperatureF: 32,
+      materials: ['bismuth', 'lead'] as const,
+      maxPrice: 4.5,
+      shelf: [loadId],
+      onlyShelf: true,
+      rankBy: 'margin' as const,
+    };
+    expect(parseInputs(serializeInputs(inputs))).toEqual({
+      ...inputs,
+      materials: ['bismuth', 'lead'],
+    });
   });
 
   it('round-trips the defaults', () => {

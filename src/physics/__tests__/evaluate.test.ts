@@ -39,6 +39,9 @@ function sampleResult(
     meetsPattern: overrides.meetsPattern ?? true,
     passes: overrides.passes ?? true,
     costPerShell: overrides.costPerShell ?? load.pricePerShell,
+    energyMarginFtLb: overrides.energyMarginFtLb ?? 1,
+    hitMargin: overrides.hitMargin ?? 10,
+    marginScore: overrides.marginScore ?? 1.2,
   };
 }
 
@@ -73,8 +76,10 @@ describe('recommendation', () => {
     name: 'Duck',
     minPelletEnergyFtLb: 2,
     minPatternHits: 50,
+    patternCircleIn: 30,
     typicalRangeYd: 35,
     source: 'PLACEHOLDER',
+    energySource: 'PLACEHOLDER',
     waterfowl: true,
   };
 
@@ -135,10 +140,60 @@ describe('recommendation', () => {
     expect(recommendation.closestMiss?.load.id).toBe('close');
   });
 
+  it('keeps the widest margin per material when ranking by margin', () => {
+    const results = [
+      sampleResult({
+        passes: true,
+        costPerShell: 1,
+        marginScore: 1.1,
+        load: { id: 'cheap-thin', material: 'steel', label: 'Cheap', pricePerShell: 1 },
+      }),
+      sampleResult({
+        passes: true,
+        costPerShell: 2,
+        marginScore: 1.8,
+        load: { id: 'dear-wide', material: 'steel', label: 'Wide', pricePerShell: 2 },
+      }),
+      sampleResult({
+        passes: true,
+        costPerShell: 5,
+        marginScore: 1.4,
+        load: { id: 'tss', material: 'tss', label: 'TSS', pricePerShell: 5 },
+      }),
+    ];
+    const { options } = recommend(results, species, 'margin');
+    expect(options.map((option) => option.load.id)).toEqual(['dear-wide', 'tss']);
+  });
+
   it('treats a load on the threshold as a pass', () => {
     expect(meetsSpeciesThreshold(2, 50, species).passes).toBe(true);
     expect(meetsSpeciesThreshold(1.99, 50, species).meetsEnergy).toBe(false);
     expect(meetsSpeciesThreshold(2, 49, species).meetsPattern).toBe(false);
+  });
+});
+
+describe('shelf and price filters', () => {
+  it('limits eligibility by material, max price, and shelf', () => {
+    const base = defaultInputs();
+    const steelOnly = eligibleLoads({ ...base, materials: ['steel'] });
+    expect(steelOnly.length).toBeGreaterThan(0);
+    expect(steelOnly.every((load) => load.material === 'steel')).toBe(true);
+    expect(eligibleLoads({ ...base, materials: [] })).toHaveLength(0);
+
+    const cap = 2;
+    const capped = eligibleLoads({ ...base, maxPrice: cap });
+    expect(capped.length).toBeGreaterThan(0);
+    expect(capped.every((load) => load.pricePerShell <= cap)).toBe(true);
+
+    const bismuth = FACTORY_LOADS.find((load) => load.gauge === 12 && load.material === 'bismuth');
+    expect(bismuth).toBeDefined();
+    const shelf = eligibleLoads({
+      ...base,
+      speciesId: 'pheasant',
+      onlyShelf: true,
+      shelf: [bismuth!.id],
+    });
+    expect(shelf.map((load) => load.id)).toEqual([bismuth!.id]);
   });
 });
 
