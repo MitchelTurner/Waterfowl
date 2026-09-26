@@ -102,19 +102,24 @@ export function RecommendationCard({
                     onChange={(event) => {
                       const raw = event.target.value;
                       setDrafts((current) => ({ ...current, [option.load.id]: raw }));
-                      const parsed = Number(raw);
-                      if (raw.trim() === '' || !Number.isFinite(parsed) || parsed < 0) return;
-                      const cents = Math.round(parsed * 100) / 100;
-                      const seed = Math.round(option.load.pricePerShell * 100) / 100;
-                      onPrice(option.load.id, cents === seed ? null : cents);
                     }}
-                    onBlur={() => {
+                    onBlur={(event) => {
+                      const raw = event.currentTarget.value;
+                      const parsed = Number(raw);
+                      if (raw.trim() !== '' && Number.isFinite(parsed) && parsed >= 0) {
+                        const cents = Math.round(parsed * 100) / 100;
+                        const seed = Math.round(option.load.pricePerShell * 100) / 100;
+                        onPrice(option.load.id, cents === seed ? null : cents);
+                      }
                       setDrafts((current) => {
                         if (current[option.load.id] === undefined) return current;
                         const next = { ...current };
                         delete next[option.load.id];
                         return next;
                       });
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') event.currentTarget.blur();
                     }}
                   />
                 </label>
