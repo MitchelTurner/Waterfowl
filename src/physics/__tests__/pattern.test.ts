@@ -5,17 +5,26 @@ import { PHYSICS } from '../../config/physics';
 import { expectedHits, patternPercent } from '../pattern';
 
 describe('pattern estimate', () => {
-  it('adjusts the 40-yard choke percent by range and clamps it', () => {
-    expect(patternPercent({ choke: 'mod', patternModifier: 0, rangeYd: 40 })).toBe(
+  it('matches the choke table at 40 yards in a 30-inch circle and clamps far out', () => {
+    expect(patternPercent({ choke: 'mod', patternModifier: 0, rangeYd: 40 })).toBeCloseTo(
       CHOKE_PATTERN_PCT.mod,
+      5,
     );
-    expect(patternPercent({ choke: 'mod', patternModifier: 0, rangeYd: 50 })).toBe(50);
     expect(patternPercent({ choke: 'full', patternModifier: 5, rangeYd: 15 })).toBe(
       PHYSICS.patternPercentMax,
     );
-    expect(patternPercent({ choke: 'cyl', patternModifier: 0, rangeYd: 70 })).toBe(
+    expect(patternPercent({ choke: 'cyl', patternModifier: 0, rangeYd: 200 })).toBe(
       PHYSICS.patternPercentMin,
     );
+  });
+
+  it('drops for a smaller counting circle and rises for a tighter gauge factor', () => {
+    const wide = patternPercent({ choke: 'full', patternModifier: 0, rangeYd: 40, circleInches: 30 });
+    const tight = patternPercent({ choke: 'full', patternModifier: 0, rangeYd: 40, circleInches: 10 });
+    expect(tight).toBeLessThan(wide);
+    const twelve = patternPercent({ choke: 'mod', patternModifier: 0, rangeYd: 50, gauge: 12 });
+    const fourTen = patternPercent({ choke: 'mod', patternModifier: 0, rangeYd: 50, gauge: 410 });
+    expect(fourTen).toBeGreaterThan(twelve);
   });
 
   it('never estimates more hits than pellets thrown', () => {

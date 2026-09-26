@@ -12,9 +12,10 @@ export function DevThresholdBanner() {
       className="border-b border-brass/40 bg-[#f3e2c4] px-4 py-3 text-sm text-ink"
     >
       <p className="mx-auto max-w-3xl">
-        <strong className="font-semibold">TODO:</strong> {names} energy and pattern thresholds are{' '}
-        <strong className="font-semibold">PLACEHOLDER</strong> values. Replace each species source
-        before treating pass/fail as published guidance.
+        <strong className="font-semibold">TODO:</strong> {names} pellet-energy thresholds are still{' '}
+        <strong className="font-semibold">PLACEHOLDER</strong> values. Duck, goose, and pheasant
+        pattern counts follow Roster’s 2016 table. Turkey counts a 10-inch circle. Grouse is not in
+        that table.
       </p>
     </div>
   );

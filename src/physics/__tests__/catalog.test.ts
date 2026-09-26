@@ -28,7 +28,7 @@ function sourceFiles(dir: string): string[] {
 }
 
 describe('catalog', () => {
-  it('gives every species a source and keeps the seed marked as placeholder', () => {
+  it('cites pattern counts and keeps energy marked as placeholder', () => {
     expect(SPECIES.map((species) => species.id).sort()).toEqual([
       'duck',
       'goose',
@@ -38,8 +38,16 @@ describe('catalog', () => {
     ]);
     for (const species of SPECIES) {
       expect(species.source.trim().length).toBeGreaterThan(0);
-      expect(isPlaceholderSource(species.source)).toBe(true);
+      expect(isPlaceholderSource(species.energySource)).toBe(true);
     }
+    for (const id of ['duck', 'goose', 'pheasant', 'turkey']) {
+      const species = SPECIES.find((item) => item.id === id);
+      expect(species?.source).toContain('Roster');
+      expect(isPlaceholderSource(species?.source ?? '')).toBe(false);
+    }
+    expect(isPlaceholderSource(SPECIES.find((item) => item.id === 'grouse')?.source ?? '')).toBe(
+      true,
+    );
     expect(isPlaceholderSource('Smith 2019, table 2')).toBe(false);
     expect(unsourcedSpecies().length).toBe(SPECIES.length);
   });

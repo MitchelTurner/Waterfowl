@@ -35,15 +35,21 @@ export interface Material {
   waterfowlLegal: boolean;
 }
 
+export type RankBy = 'price' | 'margin';
+
 export interface Species {
   id: string;
   name: string;
   minPelletEnergyFtLb: number;
-  /** Pellets in a 30-inch circle. */
+  /** Pellets inside `patternCircleIn`. */
   minPatternHits: number;
+  /** Counting circle for the pattern threshold. Turkey uses 10 inches. */
+  patternCircleIn: number;
   typicalRangeYd: number;
-  /** Citation, or a PLACEHOLDER string until published data is wired in. */
+  /** Citation for the pattern count, or a PLACEHOLDER string. */
   source: string;
+  /** Citation for pellet energy, or a PLACEHOLDER string. */
+  energySource: string;
   /** Ducks and geese. Lead is dropped for these species. */
   waterfowl: boolean;
 }
@@ -72,6 +78,12 @@ export interface LoadResult {
   meetsPattern: boolean;
   passes: boolean;
   costPerShell: number;
+  /** Energy minus the species minimum. Negative when short. */
+  energyMarginFtLb: number;
+  /** Hits minus the species minimum. Negative when short. */
+  hitMargin: number;
+  /** Lower of the energy and pattern ratios. 1 means right on the threshold. */
+  marginScore: number;
 }
 
 export interface EvaluationInputs {
@@ -81,13 +93,17 @@ export interface EvaluationInputs {
   choke: Choke;
   olderGun: boolean;
   priceOverrides?: Readonly<Record<string, number>>;
+  elevationFt: number;
+  temperatureF: number;
+  /** null means every material. An empty list means none. */
+  materials: readonly MaterialId[] | null;
+  maxPrice: number | null;
+  shelf: readonly string[];
+  onlyShelf: boolean;
+  rankBy: RankBy;
 }
 
-export interface AppInputs {
-  speciesId: string;
-  rangeYd: number;
-  gauge: Gauge;
-  choke: Choke;
-  olderGun: boolean;
+export interface AppInputs extends EvaluationInputs {
   priceOverrides: Record<string, number>;
+  shelf: string[];
 }
