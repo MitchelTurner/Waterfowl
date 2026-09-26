@@ -22,27 +22,33 @@ export function ResultsTable({ results, sortBy, sortDir, onSortChange }: Results
       <table className="min-w-full text-left text-sm">
         <thead className="bg-slate-100 text-slate-700">
           <tr>
-            <th className="px-3 py-2">Load</th>
-            <th className="px-3 py-2">Material</th>
-            <th className="px-3 py-2">Pellets</th>
-            <th className="px-3 py-2" aria-sort={ariaSortValue('energy', sortBy, sortDir)}>
-              <button
-                type="button"
-                onClick={() => onSortChange('energy')}
-                aria-label={`Sort by energy, currently ${ariaSortValue('energy', sortBy, sortDir)}`}
-              >
-                Energy @ range {sortBy === 'energy' ? `(${sortDir})` : ''}
+            <th className="px-3 py-2" scope="col">
+              Load
+            </th>
+            <th className="px-3 py-2" scope="col">
+              Material
+            </th>
+            <th className="px-3 py-2" scope="col">
+              Pellets
+            </th>
+            <th className="px-3 py-2" scope="col" aria-sort={ariaSortValue('energy', sortBy, sortDir)}>
+              <button type="button" onClick={() => onSortChange('energy')}>
+                Energy @ range
+                <span className="sr-only"> sorted {ariaSortValue('energy', sortBy, sortDir)}</span>
+                {sortBy === 'energy' ? ` (${sortDir})` : ''}
               </button>
             </th>
-            <th className="px-3 py-2">Expected hits (est.)</th>
-            <th className="px-3 py-2">Pass</th>
-            <th className="px-3 py-2" aria-sort={ariaSortValue('cost', sortBy, sortDir)}>
-              <button
-                type="button"
-                onClick={() => onSortChange('cost')}
-                aria-label={`Sort by cost, currently ${ariaSortValue('cost', sortBy, sortDir)}`}
-              >
-                $/shell {sortBy === 'cost' ? `(${sortDir})` : ''}
+            <th className="px-3 py-2" scope="col">
+              Expected hits (est.)
+            </th>
+            <th className="px-3 py-2" scope="col">
+              Pass
+            </th>
+            <th className="px-3 py-2" scope="col" aria-sort={ariaSortValue('cost', sortBy, sortDir)}>
+              <button type="button" onClick={() => onSortChange('cost')}>
+                $/shell
+                <span className="sr-only"> sorted {ariaSortValue('cost', sortBy, sortDir)}</span>
+                {sortBy === 'cost' ? ` (${sortDir})` : ''}
               </button>
             </th>
           </tr>

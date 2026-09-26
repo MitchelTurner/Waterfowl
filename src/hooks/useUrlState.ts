@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { factoryLoads } from '../config/loads'
 import { speciesList } from '../config/species'
 import type { Choke, FactoryLoad } from '../types'
 
@@ -15,6 +16,8 @@ export interface UrlState {
 
 const validGauges: FactoryLoad['gauge'][] = [12, 16, 20, 28, 410]
 const validChokes: Choke[] = ['cyl', 'ic', 'mod', 'im', 'full']
+const validSpeciesIds = new Set(speciesList.map((species) => species.id))
+const validLoadIds = new Set(factoryLoads.map((load) => load.id))
 
 const defaultState: UrlState = {
   speciesId: speciesList[0].id,
@@ -25,6 +28,21 @@ const defaultState: UrlState = {
   priceOverrides: {},
   sortBy: 'cost',
   sortDir: 'asc',
+}
+
+function sanitizePriceOverrides(parsedPrices: unknown): Record<string, number> {
+  if (!parsedPrices || typeof parsedPrices !== 'object') {
+    return {}
+  }
+
+  const output: Record<string, number> = {}
+  for (const [key, value] of Object.entries(parsedPrices)) {
+    if (validLoadIds.has(key) && typeof value === 'number' && Number.isFinite(value) && value >= 0) {
+      output[key] = value
+    }
+  }
+
+  return output
 }
 
 export function serializeUrlState(state: UrlState): string {
@@ -46,20 +64,22 @@ export function parseUrlState(search: string): UrlState {
   const params = new URLSearchParams(search)
   const parsedGauge = Number(params.get('gauge')) as FactoryLoad['gauge']
   const parsedChoke = params.get('choke') as Choke | null
+  const parsedSpeciesId = params.get('species')
+  const parsedRange = Number(params.get('range'))
 
   let parsedPrices: Record<string, number> = {}
   const rawPrices = params.get('prices')
   if (rawPrices) {
     try {
-      parsedPrices = JSON.parse(rawPrices) as Record<string, number>
+      parsedPrices = sanitizePriceOverrides(JSON.parse(rawPrices))
     } catch {
       parsedPrices = {}
     }
   }
 
   return {
-    speciesId: params.get('species') ?? defaultState.speciesId,
-    rangeYd: Number(params.get('range') ?? defaultState.rangeYd),
+    speciesId: parsedSpeciesId && validSpeciesIds.has(parsedSpeciesId) ? parsedSpeciesId : defaultState.speciesId,
+    rangeYd: Number.isFinite(parsedRange) ? parsedRange : defaultState.rangeYd,
     gauge: validGauges.includes(parsedGauge) ? parsedGauge : defaultState.gauge,
     choke: parsedChoke && validChokes.includes(parsedChoke) ? parsedChoke : defaultState.choke,
     olderGun: params.get('olderGun') === '1',

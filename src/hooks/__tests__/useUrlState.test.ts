@@ -19,11 +19,15 @@ describe('URL state', () => {
   })
 
   it('falls back safely for malformed query values', () => {
-    const parsed = parseUrlState('?gauge=10&choke=extra-full&prices=not-json&sortBy=what')
+    const parsed = parseUrlState(
+      '?species=unknown&range=nope&gauge=10&choke=extra-full&prices={"invalid":-2,"12ga-steel-2-125":2.3,"12ga-bis-3-125":"x"}&sortBy=what',
+    )
 
+    expect(parsed.speciesId).toBe('duck')
+    expect(parsed.rangeYd).toBe(35)
     expect(parsed.gauge).toBe(12)
     expect(parsed.choke).toBe('mod')
-    expect(parsed.priceOverrides).toEqual({})
+    expect(parsed.priceOverrides).toEqual({ '12ga-steel-2-125': 2.3 })
     expect(parsed.sortBy).toBe('cost')
   })
 })
