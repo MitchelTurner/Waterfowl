@@ -100,23 +100,21 @@ export function PriceDrawer({
         className="flex max-h-[85dvh] w-full max-w-3xl flex-col rounded-t-md bg-paper shadow-card"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-start justify-between gap-3 border-b border-line px-4 py-3">
-          <div>
-            <h2 id="price-title" className="font-display text-2xl leading-none">
-              Edit prices
-            </h2>
-            <p className="mt-1 text-sm text-ink/80">
-              Seed prices dated {SEED_PRICED_ON}. Not a live quote. Overrides stay in the link.
-            </p>
+        <div className="px-4 pb-3 pt-4">
+          <div className="dept">
+            <h2 id="price-title">Rate card</h2>
+            <button
+              ref={closeRef}
+              type="button"
+              className="min-h-11 shrink-0 border border-ink px-3 font-kicker text-xs uppercase tracking-[0.14em]"
+              onClick={onClose}
+            >
+              Close
+            </button>
           </div>
-          <button
-            ref={closeRef}
-            type="button"
-            className="min-h-12 shrink-0 rounded-md border border-line px-3 text-sm font-semibold"
-            onClick={onClose}
-          >
-            Close
-          </button>
+          <p className="mt-2 text-sm italic text-ink/80">
+            Seed prices dated {SEED_PRICED_ON}. Not a live quote. Overrides stay in the link.
+          </p>
         </div>
         <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-2">
           <p className="text-sm">{overrideCount === 0 ? 'Using seed prices.' : `${overrideCount} edited.`}</p>
@@ -132,7 +130,7 @@ export function PriceDrawer({
         <div className="overflow-y-auto px-4 py-3">
           {focusLoads.length > 0 ? (
             <section className="mb-4">
-              <h3 className="text-sm font-semibold uppercase tracking-wide">Comparing now</h3>
+              <h3 className="font-kicker text-sm uppercase tracking-[0.16em] text-clay">Comparing now</h3>
               <ul className="mt-2 space-y-3">{focusLoads.map((load) => renderLoad(load, 'focus-price'))}</ul>
             </section>
           ) : null}
@@ -141,7 +139,7 @@ export function PriceDrawer({
             if (loads.length === 0) return null;
             return (
               <section key={gauge} className="mb-4">
-                <h3 className="text-sm font-semibold uppercase tracking-wide">{formatGauge(gauge)}</h3>
+                <h3 className="font-kicker text-sm uppercase tracking-[0.16em]">{formatGauge(gauge)}</h3>
                 <ul className="mt-2 space-y-3">{loads.map((load) => renderLoad(load, 'price'))}</ul>
               </section>
             );
