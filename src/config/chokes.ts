@@ -9,13 +9,56 @@ export const CHOKE_PATTERN_PCT: Record<Choke, number> = {
   full: 70,
 };
 
-export const CHOKE_OPTIONS: readonly { id: Choke; label: string }[] = [
-  { id: 'cyl', label: 'Cylinder' },
-  { id: 'ic', label: 'Improved Cylinder' },
-  { id: 'mod', label: 'Modified' },
-  { id: 'im', label: 'Improved Modified' },
-  { id: 'full', label: 'Full' },
+export const CHOKE_OPTIONS: readonly { id: Choke; label: string; summary: string }[] = [
+  {
+    id: 'cyl',
+    label: 'Cylinder',
+    summary: 'No constriction. The widest pattern in this list, for very close shots.',
+  },
+  {
+    id: 'ic',
+    label: 'Improved Cylinder',
+    summary: 'A light constriction. A common choice for close birds.',
+  },
+  {
+    id: 'mod',
+    label: 'Modified',
+    summary: 'A middle constriction. A general hunting choke.',
+  },
+  {
+    id: 'im',
+    label: 'Improved Modified',
+    summary: 'Tighter than modified and more open than full.',
+  },
+  {
+    id: 'full',
+    label: 'Full',
+    summary: 'A tight constriction for longer shots.',
+  },
 ];
+
+/** Names a hunter may see that are not in the dropdown. */
+export const UNLISTED_CHOKES: readonly { name: string; detail: string }[] = [
+  {
+    name: 'Skeet',
+    detail: 'Sits between cylinder and improved cylinder. Choose the nearer of those two.',
+  },
+  {
+    name: 'Light modified',
+    detail: 'Sits between improved cylinder and modified. Choose the nearer of those two.',
+  },
+  {
+    name: 'Extra-full and turkey',
+    detail: 'Tighter than full. Full is the nearest name here, and this estimate will be more open than that choke.',
+  },
+];
+
+export const CHOKE_IDENTIFY = [
+  'A screw-in tube is usually stamped on the side: CYL, SK, IC, LM, M, IM, F, XF, or Turkey. Match those letters, the tube box, or the maker’s chart.',
+  'Notches on the rim are a maker’s code. They do not mean the same thing on every brand, so read the stamp before counting notches.',
+  'A fixed choke is often stamped on the barrel as Cylinder, Imp. Cyl., Modified, or Full.',
+  'If nothing is marked, a shop can measure the constriction. You can also count pellets in a 30-inch circle at 40 yards and pick the closest percent in this list.',
+] as const;
 
 export function chokeLabel(choke: Choke): string {
   const match = CHOKE_OPTIONS.find((option) => option.id === choke);

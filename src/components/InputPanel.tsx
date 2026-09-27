@@ -1,4 +1,6 @@
+import { useEffect, useId, useState } from 'react';
 import { CHOKE_OPTIONS } from '../config/chokes';
+import { ChokeHelpPanel } from './ChokeHelp';
 import { MATERIALS } from '../config/materials';
 import { PHYSICS } from '../config/physics';
 import { isPlaceholderSource, SPECIES, speciesById } from '../config/species';
@@ -21,6 +23,10 @@ export function InputPanel({
   inputs: AppInputs;
   onChange: (patch: Partial<AppInputs>) => void;
 }) {
+  const [chokeHover, setChokeHover] = useState(false);
+  const [chokePinned, setChokePinned] = useState(false);
+  const chokeHelpId = useId();
+  const chokeOpen = chokeHover || chokePinned;
   const species = speciesById(inputs.speciesId);
   const energyPlaceholder = import.meta.env.DEV && isPlaceholderSource(species.energySource);
   const enabled = new Set(inputs.materials ?? MATERIALS.map((material) => material.id));
@@ -28,6 +34,15 @@ export function InputPanel({
     inputs.rangeYd === species.typicalRangeYd
       ? `Typical range for ${species.name.toLowerCase()}.`
       : `Typical for ${species.name.toLowerCase()} is ${species.typicalRangeYd} yd.`;
+
+  useEffect(() => {
+    if (!chokePinned) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setChokePinned(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [chokePinned]);
 
   function toggleMaterial(id: MaterialId) {
     const current = inputs.materials ?? MATERIALS.map((material) => material.id);
@@ -91,9 +106,12 @@ export function InputPanel({
       />
       <p className="text-sm text-ink/80">{typical}</p>
 
-      <div className="mt-4 grid grid-cols-2 gap-3">
+      <div
+        className="mt-4 grid grid-cols-2 gap-3"
+        onMouseLeave={() => setChokeHover(false)}
+      >
         <div>
-          <label className="block text-sm font-semibold" htmlFor="gauge">
+          <label className="flex min-h-11 items-center text-sm font-semibold" htmlFor="gauge">
             Gauge
           </label>
           <select
@@ -109,14 +127,29 @@ export function InputPanel({
             ))}
           </select>
         </div>
-        <div>
-          <label className="block text-sm font-semibold" htmlFor="choke">
-            Choke
-          </label>
+        <div onMouseEnter={() => setChokeHover(true)}>
+          <div className="flex min-h-11 items-center justify-between gap-2">
+            <label
+              className="cursor-help border-b border-dotted border-brass text-sm font-semibold"
+              htmlFor="choke"
+            >
+              Choke
+            </label>
+            <button
+              type="button"
+              className="min-h-11 text-xs font-semibold uppercase tracking-wide text-brass"
+              aria-expanded={chokeOpen}
+              aria-controls={chokeHelpId}
+              onClick={() => setChokePinned((current) => !current)}
+            >
+              Explain
+            </button>
+          </div>
           <select
             id="choke"
             className={fieldClass}
             value={inputs.choke}
+            aria-describedby={chokeOpen ? chokeHelpId : undefined}
             onChange={(event) => onChange({ choke: event.target.value as Choke })}
           >
             {CHOKE_OPTIONS.map((choke) => (
@@ -126,6 +159,17 @@ export function InputPanel({
             ))}
           </select>
         </div>
+        {chokeOpen ? (
+          <div
+            id={chokeHelpId}
+            role="region"
+            aria-label="Choke guide"
+            className="col-span-2 rounded-md border border-line bg-paper p-3"
+            onMouseEnter={() => setChokeHover(true)}
+          >
+            <ChokeHelpPanel current={inputs.choke} />
+          </div>
+        ) : null}
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-3">
