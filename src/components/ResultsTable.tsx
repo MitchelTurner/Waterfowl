@@ -90,12 +90,10 @@ export function ResultsTable({
   const energyLabel = sortKey === 'energy' ? `Energy, ${directionLabel}` : 'Sort by energy';
 
   return (
-    <section id="results" className="rounded-md border border-line bg-card p-4 shadow-card" aria-labelledby="results-title">
-      <div className="flex items-end justify-between gap-3">
-        <h2 id="results-title" className="font-display text-2xl leading-none">
-          Loads
-        </h2>
-        <p className="text-sm text-ink/70">{sorted.length}</p>
+    <section id="results" className="border border-ink bg-card p-4" aria-labelledby="results-title">
+      <div className="dept">
+        <h2 id="results-title">Loads</h2>
+        <p className="font-kicker text-sm tracking-normal">{sorted.length}</p>
       </div>
       <p className="mt-2 text-sm text-ink/80">
         Failing loads stay in the list. Hit counts are a pattern estimate.
@@ -103,8 +101,8 @@ export function ResultsTable({
       <div className="mt-3 grid grid-cols-2 gap-2">
         <button
           type="button"
-          className={`min-h-12 rounded-md border px-3 text-sm font-semibold ${
-            sortKey === 'cost' ? 'border-marsh bg-marsh text-paper' : 'border-line bg-paper text-ink'
+          className={`min-h-12 border px-2 font-kicker text-xs uppercase leading-tight tracking-[0.08em] ${
+            sortKey === 'cost' ? 'border-ink bg-ink text-paper' : 'border-ink bg-paper text-ink'
           }`}
           aria-pressed={sortKey === 'cost'}
           onClick={() => toggle('cost')}
@@ -113,8 +111,8 @@ export function ResultsTable({
         </button>
         <button
           type="button"
-          className={`min-h-12 rounded-md border px-3 text-sm font-semibold ${
-            sortKey === 'energy' ? 'border-marsh bg-marsh text-paper' : 'border-line bg-paper text-ink'
+          className={`min-h-12 border px-2 font-kicker text-xs uppercase leading-tight tracking-[0.08em] ${
+            sortKey === 'energy' ? 'border-ink bg-ink text-paper' : 'border-ink bg-paper text-ink'
           }`}
           aria-pressed={sortKey === 'energy'}
           onClick={() => toggle('energy')}

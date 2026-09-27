@@ -14,7 +14,7 @@ import {
   type RankBy,
 } from '../types';
 
-const fieldClass = 'mt-1 min-h-12 w-full rounded-md border border-line bg-paper px-3 text-base';
+const fieldClass = 'mt-1 min-h-12 w-full border border-ink bg-paper px-3 text-base';
 
 export function InputPanel({
   inputs,
@@ -52,11 +52,11 @@ export function InputPanel({
 
   return (
     <form
-      className="rounded-md border border-line bg-card p-4 shadow-card"
+      className="border border-ink bg-card p-4"
       onSubmit={(event) => event.preventDefault()}
     >
-      <div className="flex items-end justify-between gap-3">
-        <h2 className="font-display text-2xl leading-none">Setup</h2>
+      <div className="dept">
+        <h2>Setup</h2>
         {energyPlaceholder ? (
           <span className="rounded-sm bg-brass px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-white">
             Energy placeholder

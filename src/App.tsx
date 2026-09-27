@@ -55,25 +55,33 @@ export function App() {
       >
         Skip to recommendation
       </a>
-      <header className="border-b border-black/10 bg-marsh text-paper">
-        <div className="mx-auto flex max-w-3xl flex-col gap-3 px-4 py-4">
+      <header className="bg-paper text-ink">
+        <div className="mx-auto flex max-w-3xl flex-col gap-3 px-4 pb-2 pt-5">
           <div>
-            <p className="font-display text-4xl leading-none">ShotMath</p>
-            <p className="mt-1 max-w-md text-sm text-paper/80">
-              Compare factory shotgun loads by energy, pattern, and price.
+            <p className="text-center font-kicker text-[0.7rem] uppercase tracking-[0.42em] text-clay">
+              Shotgun loads compared
+            </p>
+            <h1 className="mt-1 text-center font-display text-5xl font-bold leading-[0.85] tracking-tight sm:text-6xl">
+              ShotMath
+            </h1>
+            <p className="mx-auto mt-2 max-w-md text-center font-display text-base italic leading-snug">
+              Factory loads, weighed by energy, pattern, and price.
+            </p>
+            <p className="mt-3 bg-clay px-3 py-1.5 text-center font-kicker text-[0.68rem] uppercase tracking-[0.22em] text-paper">
+              A field calculator
             </p>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
-              className="min-h-12 rounded-md bg-paper px-3 text-sm font-semibold text-marsh"
+              className="min-h-12 border border-ink bg-ink px-3 font-kicker text-sm uppercase tracking-[0.14em] text-paper"
               onClick={() => setPricesOpen(true)}
             >
               Edit prices
             </button>
             <button
               type="button"
-              className="min-h-12 rounded-md border border-paper/40 px-3 text-sm font-semibold"
+              className="min-h-12 border border-ink bg-paper px-3 font-kicker text-sm uppercase tracking-[0.14em]"
               onClick={() => void copyLink()}
             >
               {copied ? 'Link copied' : 'Copy link'}
@@ -110,8 +118,8 @@ export function App() {
           onToggleShelf={toggleShelf}
         />
         <MaterialChart />
-        <details className="rounded-md border border-line bg-card p-4 text-sm shadow-card">
-          <summary className="min-h-12 cursor-pointer font-semibold">How this estimate works</summary>
+        <details className="border border-ink bg-card p-4 text-sm">
+          <summary className="dept min-h-12 cursor-pointer">How this estimate works</summary>
           <div className="mt-2 space-y-2 text-ink/85">
             <p>Pellet mass comes from shot diameter and material density. Count is payload divided by that mass.</p>
             <p>
@@ -130,8 +138,12 @@ export function App() {
           </div>
         </details>
       </main>
-      <footer className="mx-auto max-w-3xl px-4 pb-8 text-sm text-ink/80">
-        Estimates only. Pattern your own gun. Not reloading data.
+      <footer className="mx-auto max-w-3xl px-4 pb-10 pt-2 text-center text-sm">
+        <div className="border-t-[3px] border-clay pt-1">
+          <p className="border-t border-ink pt-2 font-kicker text-xs uppercase tracking-[0.18em] text-ink/80">
+            Estimates only. Pattern your own gun. Not reloading data.
+          </p>
+        </div>
       </footer>
       <PriceDrawer
         open={pricesOpen}

@@ -9,7 +9,7 @@ export function DevThresholdBanner() {
     <div
       role="status"
       data-testid="threshold-todo"
-      className="border-b border-brass/40 bg-[#f3e2c4] px-4 py-3 text-sm text-ink"
+      className="border-y border-clay bg-card px-4 py-3 text-sm text-ink"
     >
       <p className="mx-auto max-w-3xl">
         <strong className="font-semibold">TODO:</strong> {names} pellet-energy thresholds are still{' '}

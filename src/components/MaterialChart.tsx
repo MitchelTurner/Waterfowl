@@ -15,8 +15,8 @@ export function MaterialChart() {
   const leadRatio = materialById('lead').density / max;
 
   return (
-    <figure className="rounded-md border border-line bg-card p-4 shadow-card">
-      <figcaption className="font-display text-2xl leading-none">Density</figcaption>
+    <figure className="border border-ink bg-card p-4">
+      <figcaption className="dept">Density</figcaption>
       <p className="mt-2 text-sm text-ink/80">
         Grams per cubic centimeter. The dashed line marks lead density. Lead is a reference only and
         is not legal for waterfowl.
