@@ -42,6 +42,7 @@ function sampleResult(
     energyMarginFtLb: overrides.energyMarginFtLb ?? 1,
     hitMargin: overrides.hitMargin ?? 10,
     marginScore: overrides.marginScore ?? 1.2,
+    aim: overrides.aim ?? 'both',
   };
 }
 
@@ -165,6 +166,49 @@ describe('recommendation', () => {
     expect(options.map((option) => option.load.id)).toEqual(['dear-wide', 'tss']);
   });
 
+  it('keeps the largest shot that has the energy when the pattern is thin', () => {
+    const results = [
+      sampleResult({
+        passes: false,
+        meetsEnergy: true,
+        meetsPattern: false,
+        energyAtRangeFtLb: 6,
+        expectedHits: 30,
+        aim: 'head',
+        load: { id: 't-steel', material: 'steel', shotSize: 'T', label: 'T Steel', pricePerShell: 1.55 },
+      }),
+      sampleResult({
+        passes: false,
+        meetsEnergy: true,
+        meetsPattern: false,
+        energyAtRangeFtLb: 4,
+        expectedHits: 40,
+        aim: 'head',
+        load: { id: 'bb-steel', material: 'steel', shotSize: 'BB', label: 'BB Steel', pricePerShell: 1.4 },
+      }),
+      sampleResult({
+        passes: true,
+        meetsEnergy: true,
+        meetsPattern: true,
+        energyAtRangeFtLb: 3,
+        load: { id: 'two-steel', material: 'steel', shotSize: '2', label: 'Steel 2', pricePerShell: 1.25 },
+      }),
+      sampleResult({
+        passes: false,
+        meetsEnergy: true,
+        meetsPattern: false,
+        energyAtRangeFtLb: 8,
+        expectedHits: 20,
+        aim: 'head',
+        costPerShell: 4.15,
+        load: { id: 't-bi', material: 'bismuth', shotSize: 'T', label: 'T Bismuth', pricePerShell: 4.15 },
+      }),
+    ];
+    const recommendation = recommend(results, species);
+    expect(recommendation.options.map((option) => option.load.id)).toEqual(['two-steel']);
+    expect(recommendation.energyOnly.map((option) => option.load.id)).toEqual(['t-bi', 't-steel']);
+  });
+
   it('treats a load on the threshold as a pass', () => {
     expect(meetsSpeciesThreshold(2, 50, species).passes).toBe(true);
     expect(meetsSpeciesThreshold(1.99, 50, species).meetsEnergy).toBe(false);
@@ -237,7 +281,33 @@ describe('catalog evaluation', () => {
         expect(result.expectedHits).toBeLessThanOrEqual(result.pelletCount);
         expect(result.expectedHits).toBeGreaterThanOrEqual(0);
         expect(result.velocityAtRangeFps).toBeLessThan(result.load.velocityFps);
+        expect(['head', 'body', 'both']).toContain(result.aim);
       }
     }
+  });
+
+  it('shows T shot energy for duck and goose when the pattern is thin', () => {
+    for (const speciesId of ['duck', 'goose'] as const) {
+      const species = speciesById(speciesId);
+      for (const gauge of [12, 20] as const) {
+        const inputs = { ...defaultInputs(), speciesId, rangeYd: species.typicalRangeYd, gauge };
+        const tee = evaluateMatching(inputs).find((result) => result.load.shotSize === 'T');
+        expect(tee, `${speciesId} ${gauge}`).toBeDefined();
+        expect(tee!.meetsEnergy).toBe(true);
+        expect(tee!.meetsPattern).toBe(false);
+        expect(tee!.aim).toBe('head');
+        const { energyOnly } = recommend(evaluateMatching(inputs), species);
+        expect(energyOnly.some((result) => result.load.shotSize === 'T')).toBe(true);
+      }
+    }
+
+    const duck = speciesById('duck');
+    const atDecoys = evaluateMatching({ ...defaultInputs(), speciesId: 'duck', rangeYd: duck.typicalRangeYd });
+    const steelTwo = atDecoys.find((result) => result.load.id === '12-steel-3-1125-2');
+    const tssSeven = atDecoys.find((result) => result.load.id === '12-tss-3-1125-7');
+    expect(steelTwo?.passes).toBe(true);
+    expect(steelTwo?.aim).toBe('both');
+    expect(tssSeven?.passes).toBe(true);
+    expect(tssSeven?.aim).toBe('body');
   });
 });

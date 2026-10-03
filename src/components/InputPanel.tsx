@@ -3,6 +3,7 @@ import { CHOKE_OPTIONS } from '../config/chokes';
 import { ChokeHelpPanel } from './ChokeHelp';
 import { MATERIALS } from '../config/materials';
 import { PHYSICS } from '../config/physics';
+import { holdGuide } from '../config/aim';
 import { isPlaceholderSource, SPECIES, speciesById } from '../config/species';
 import { formatEnergy, formatGauge } from '../format';
 import {
@@ -15,6 +16,25 @@ import {
 } from '../types';
 
 const fieldClass = 'mt-1 min-h-12 w-full border border-ink bg-paper px-3 text-base';
+
+function HoldGuide({ speciesId, speciesName }: { speciesId: string; speciesName: string }) {
+  const guide = holdGuide({ id: speciesId, name: speciesName });
+  return (
+    <div className="mt-3 border border-line bg-paper px-3 py-2 text-sm">
+      <p className="font-semibold">{guide.intro}</p>
+      {guide.rows.length > 0 ? (
+        <ul className="mt-2 space-y-1.5">
+          {guide.rows.map((row) => (
+            <li key={row.label}>
+              <span className="font-kicker text-xs uppercase tracking-[0.12em] text-clay">{row.label}</span>
+              <span className="mt-0.5 block text-ink/80">{row.detail}</span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
 
 export function InputPanel({
   inputs,
@@ -83,6 +103,7 @@ export function InputPanel({
         Needs {formatEnergy(species.minPelletEnergyFtLb)} and {species.minPatternHits} hits in a{' '}
         {species.patternCircleIn}-inch circle.
       </p>
+      <HoldGuide speciesId={species.id} speciesName={species.name} />
 
       <div className="mt-4 flex items-baseline justify-between gap-3">
         <label className="text-sm font-semibold" htmlFor="range">

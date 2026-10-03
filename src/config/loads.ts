@@ -8,6 +8,8 @@ export const SEED_PRICED_ON = '2026-09-26';
  * Tunable seed prices and factory performance.
  * Velocities fall back to the material default. Prices are USD per shell.
  * Overrides belong in URL state, not in this file.
+ * Waterfowl sizes run through T. Those loads have fewer pellets; energy is
+ * still reported when the pattern comes up thin.
  */
 
 function factoryLoad(
@@ -33,13 +35,21 @@ function shell(
 
 export const FACTORY_LOADS: readonly FactoryLoad[] = [
   shell('12-steel-3-1125-2', '12ga 3in 1-1/8oz #2 Steel', 12, 'steel', '2', 1.125, 1.25),
+  shell('12-steel-3-1125-1', '12ga 3in 1-1/8oz #1 Steel', 12, 'steel', '1', 1.125, 1.3),
+  shell('12-steel-3-1125-b', '12ga 3in 1-1/8oz B Steel', 12, 'steel', 'B', 1.125, 1.38),
   shell('12-steel-3-1125-3', '12ga 3in 1-1/8oz #3 Steel', 12, 'steel', '3', 1.125, 1.2),
   shell('12-steel-3-1125-4', '12ga 3in 1-1/8oz #4 Steel', 12, 'steel', '4', 1.125, 1.15),
   shell('12-steel-3-125-bb', '12ga 3in 1-1/4oz BB Steel', 12, 'steel', 'BB', 1.25, 1.4),
+  shell('12-steel-3-125-bbb', '12ga 3in 1-1/4oz BBB Steel', 12, 'steel', 'BBB', 1.25, 1.48),
+  shell('12-steel-3-125-t', '12ga 3in 1-1/4oz T Steel', 12, 'steel', 'T', 1.25, 1.55),
+  shell('12-steel-35-15-bbb', '12ga 3.5in 1-1/2oz BBB Steel', 12, 'steel', 'BBB', 1.5, 1.85),
+  shell('12-steel-35-15-t', '12ga 3.5in 1-1/2oz T Steel', 12, 'steel', 'T', 1.5, 1.95),
   shell('12-steel-275-1-6', '12ga 2-3/4in 1oz #6 Steel', 12, 'steel', '6', 1, 0.95),
   shell('12-bismuth-3-125-2', '12ga 3in 1-1/4oz #2 Bismuth', 12, 'bismuth', '2', 1.25, 3.4),
   shell('12-bismuth-3-125-3', '12ga 3in 1-1/4oz #3 Bismuth', 12, 'bismuth', '3', 1.25, 3.25),
   shell('12-bismuth-3-125-4', '12ga 3in 1-1/4oz #4 Bismuth', 12, 'bismuth', '4', 1.25, 3.1),
+  shell('12-bismuth-3-125-bb', '12ga 3in 1-1/4oz BB Bismuth', 12, 'bismuth', 'BB', 1.25, 3.9),
+  shell('12-bismuth-3-125-t', '12ga 3in 1-1/4oz T Bismuth', 12, 'bismuth', 'T', 1.25, 4.15),
   shell('12-bismuth-275-1-6', '12ga 2-3/4in 1oz #6 Bismuth', 12, 'bismuth', '6', 1, 2.8),
   shell(
     '12-tungsten-3-125-4',
@@ -61,6 +71,7 @@ export const FACTORY_LOADS: readonly FactoryLoad[] = [
   ),
   shell('12-hevi-3-125-2', '12ga 3in 1-1/4oz #2 Hevi-Shot', 12, 'hevi', '2', 1.25, 4.35),
   shell('12-hevi-3-125-4', '12ga 3in 1-1/4oz #4 Hevi-Shot', 12, 'hevi', '4', 1.25, 4.15),
+  shell('12-hevi-3-125-b', '12ga 3in 1-1/4oz B Hevi-Shot', 12, 'hevi', 'B', 1.25, 4.55),
   shell('12-tss-3-1125-7', '12ga 3in 1-1/8oz #7 TSS', 12, 'tss', '7', 1.125, 6.5),
   shell('12-tss-3-1125-9', '12ga 3in 1-1/8oz #9 TSS', 12, 'tss', '9', 1.125, 6.75),
   shell('12-tss-3-125-9', '12ga 3in 1-1/4oz #9 TSS', 12, 'tss', '9', 1.25, 8.4),
@@ -70,8 +81,11 @@ export const FACTORY_LOADS: readonly FactoryLoad[] = [
   shell('12-lead-275-118-75', '12ga 2-3/4in 1-1/8oz #7.5 Lead', 12, 'lead', '7.5', 1.125, 0.75),
   shell('12-lead-3-15-5', '12ga 3in 1-1/2oz #5 Lead', 12, 'lead', '5', 1.5, 1.05),
 
+  shell('20-steel-3-1-2', '20ga 3in 1oz #2 Steel', 20, 'steel', '2', 1, 1.4),
   shell('20-steel-3-1-3', '20ga 3in 1oz #3 Steel', 20, 'steel', '3', 1, 1.35),
   shell('20-steel-3-1-4', '20ga 3in 1oz #4 Steel', 20, 'steel', '4', 1, 1.3),
+  shell('20-steel-3-1-bb', '20ga 3in 1oz BB Steel', 20, 'steel', 'BB', 1, 1.55),
+  shell('20-steel-3-1-t', '20ga 3in 1oz T Steel', 20, 'steel', 'T', 1, 1.6),
   shell('20-bismuth-3-1-4', '20ga 3in 1oz #4 Bismuth', 20, 'bismuth', '4', 1, 3.55),
   shell('20-bismuth-275-875-6', '20ga 2-3/4in 7/8oz #6 Bismuth', 20, 'bismuth', '6', 0.875, 3.1),
   shell('20-tungsten-3-1-5', '20ga 3in 1oz #5 Tungsten-polymer', 20, 'tungstenPolymer', '5', 1, 3.05),

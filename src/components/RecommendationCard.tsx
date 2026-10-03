@@ -4,6 +4,7 @@ import { materialById } from '../config/materials';
 import type { Recommendation } from '../physics/evaluate';
 import {
   buildHeadline,
+  formatAim,
   formatEnergy,
   formatMargin,
   formatShotSize,
@@ -88,6 +89,7 @@ export function RecommendationCard({
                 <p className="text-ink/80">
                   {formatMargin(option.energyMarginFtLb, option.hitMargin)}
                 </p>
+                <p className="text-ink/80">Hold: {formatAim(option.aim)}</p>
                 <label className="mt-2 block font-kicker text-xs uppercase tracking-wide text-ink/70" htmlFor={`rec-price-${option.load.id}`}>
                   Price per shell
                   <input
@@ -127,6 +129,36 @@ export function RecommendationCard({
             );
           })}
         </ol>
+      ) : null}
+
+      {recommendation.energyOnly.length > 0 ? (
+        <div className="mt-4 border border-brass bg-paper px-3 py-3 text-sm">
+          <p className="font-kicker text-xs uppercase tracking-[0.14em] text-brass">Energy is there</p>
+          <p className="mt-1 text-ink/80">
+            These have the pellet energy. The pattern is thinner than the {species.name.toLowerCase()} count, which is
+            expected with shot up through T.
+          </p>
+          <ul className="mt-3 space-y-2">
+            {recommendation.energyOnly.map((option) => {
+              const material = materialById(option.load.material);
+              return (
+                <li key={option.load.id} className="border-t border-line pt-2 first:border-t-0 first:pt-0">
+                  <p className="font-semibold">
+                    {formatShotSize(option.load.shotSize)} {material.headlineName}
+                    <span className="ml-2 font-kicker text-xs uppercase tracking-wide text-brass">
+                      {formatAim(option.aim)}
+                    </span>
+                  </p>
+                  <p className="italic text-ink/80">{option.load.label}</p>
+                  <p className="text-ink/80">
+                    {formatEnergy(option.energyAtRangeFtLb)} · {formatVelocity(option.velocityAtRangeFps)} · ~
+                    {option.expectedHits} hits
+                  </p>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       ) : null}
 
       {recommendation.closestMiss ? (

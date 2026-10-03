@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { materialById } from '../config/materials';
-import { formatEnergy, formatMargin, formatUsd, formatVelocity } from '../format';
+import { formatAim, formatEnergy, formatMargin, formatUsd, formatVelocity } from '../format';
 import type { LoadResult } from '../types';
 
 type SortKey = 'cost' | 'energy';
@@ -13,16 +13,26 @@ function Status({ result }: { result: LoadResult }) {
       </span>
     );
   }
+  if (result.meetsEnergy) {
+    return (
+      <span className="inline-flex flex-wrap justify-end gap-1">
+        <span className="rounded-sm bg-brass px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-paper">
+          Energy
+        </span>
+        <span className="rounded-sm bg-clay/10 px-2 py-0.5 text-xs font-semibold text-clay">
+          Thin pattern
+        </span>
+      </span>
+    );
+  }
   return (
     <span className="inline-flex flex-wrap justify-end gap-1">
       <span className="rounded-sm bg-clay px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-white">
         Fail
       </span>
-      {!result.meetsEnergy ? (
-        <span className="rounded-sm bg-clay/10 px-2 py-0.5 text-xs font-semibold text-clay">
-          Low energy
-        </span>
-      ) : null}
+      <span className="rounded-sm bg-clay/10 px-2 py-0.5 text-xs font-semibold text-clay">
+        Low energy
+      </span>
       {!result.meetsPattern ? (
         <span className="rounded-sm bg-clay/10 px-2 py-0.5 text-xs font-semibold text-clay">
           Thin pattern
@@ -96,7 +106,7 @@ export function ResultsTable({
         <p className="font-kicker text-sm tracking-normal">{sorted.length}</p>
       </div>
       <p className="mt-2 text-sm text-ink/80">
-        Failing loads stay in the list. Hit counts are a pattern estimate.
+        Every matching load stays in the list. Energy means the pellet has the energy and the pattern is thin. Hit counts are a pattern estimate. Hold is head, body, or both.
       </p>
       <div className="mt-3 grid grid-cols-2 gap-2">
         <button
@@ -140,7 +150,7 @@ export function ResultsTable({
           <div className="mt-4 hidden overflow-x-auto md:block">
             <table className="w-full border-collapse text-left text-sm">
               <caption className="sr-only">
-                Factory loads with pellet count, energy, estimated hits, pass or fail, and price per shell.
+                Factory loads with pellet count, energy, estimated hits, hold, pass or energy or fail, and price per shell.
               </caption>
               <thead>
                 <tr className="border-b border-line text-xs uppercase tracking-wide text-ink/70">
@@ -149,6 +159,7 @@ export function ResultsTable({
                   <th className="py-2 pr-3 font-semibold">Pellets</th>
                   <th className="py-2 pr-3 font-semibold">Energy</th>
                   <th className="py-2 pr-3 font-semibold">Hits (est.)</th>
+                  <th className="py-2 pr-3 font-semibold">Hold</th>
                   <th className="py-2 pr-3 font-semibold">Result</th>
                   <th className="py-2 pr-3 font-semibold">$/shell</th>
                   <th className="py-2 font-semibold">
@@ -164,7 +175,11 @@ export function ResultsTable({
                   return (
                     <tr
                       key={result.load.id}
-                      className={result.passes ? 'border-b border-line/80' : 'border-b border-line/80 bg-mist text-ink/75'}
+                      className={
+                        result.passes || result.meetsEnergy
+                          ? 'border-b border-line/80'
+                          : 'border-b border-line/80 bg-mist text-ink/75'
+                      }
                     >
                       <td className="py-3 pr-3 font-semibold text-ink">
                         {result.load.label}
@@ -199,6 +214,7 @@ export function ResultsTable({
                         </span>
                       </td>
                       <td className="py-3 pr-3 tabular-nums">~{result.expectedHits}</td>
+                      <td className="py-3 pr-3 font-semibold">{formatAim(result.aim)}</td>
                       <td className="py-3 pr-3">
                         <Status result={result} />
                       </td>
@@ -235,9 +251,9 @@ function ResultCard({
 }) {
   const material = materialById(result.load.material);
   return (
-    <li className={`rounded-md border border-line p-3 ${result.passes ? 'bg-paper' : 'bg-mist'}`}>
+    <li className={`rounded-md border border-line p-3 ${result.passes || result.meetsEnergy ? 'bg-paper' : 'bg-mist'}`}>
       <div className="flex items-start justify-between gap-3">
-        <div className={result.passes ? '' : 'text-ink/75'}>
+        <div className={result.passes || result.meetsEnergy ? '' : 'text-ink/75'}>
           <p className="font-semibold text-ink">{result.load.label}</p>
           <p className="mt-0.5 text-sm">
             {material.name}
@@ -249,7 +265,7 @@ function ResultCard({
         </div>
         <p className="font-display text-2xl tabular-nums leading-none">{formatUsd(result.costPerShell)}</p>
       </div>
-      <div className={`mt-2 grid grid-cols-2 gap-2 text-sm ${result.passes ? '' : 'text-ink/75'}`}>
+      <div className={`mt-2 grid grid-cols-2 gap-2 text-sm ${result.passes || result.meetsEnergy ? '' : 'text-ink/75'}`}>
         <p>
           <span className="block text-xs uppercase tracking-wide">Energy</span>
           {formatEnergy(result.energyAtRangeFtLb)} · {formatVelocity(result.velocityAtRangeFps)}
@@ -259,6 +275,10 @@ function ResultCard({
           <span className="block text-xs uppercase tracking-wide">Hits (est.)</span>~{result.expectedHits}
         </p>
       </div>
+      <p className={`mt-2 text-sm ${result.passes || result.meetsEnergy ? '' : 'text-ink/75'}`}>
+        <span className="text-xs uppercase tracking-wide">Hold </span>
+        <span className="font-semibold">{formatAim(result.aim)}</span>
+      </p>
       <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
         <Status result={result} />
         <div className="flex items-center gap-3">

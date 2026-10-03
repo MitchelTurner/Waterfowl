@@ -25,6 +25,9 @@ export function App() {
   );
   const focusLoadIds = recommendation.options.map((option) => option.load.id);
   if (recommendation.closestMiss) focusLoadIds.push(recommendation.closestMiss.load.id);
+  for (const option of recommendation.energyOnly) {
+    if (!focusLoadIds.includes(option.load.id)) focusLoadIds.push(option.load.id);
+  }
 
   function toggleShelf(loadId: string) {
     const shelf = inputs.shelf.includes(loadId)
@@ -133,7 +136,13 @@ export function App() {
             <p>
               A load passes when pellet energy and estimated hits both meet the species threshold. Price rank
               keeps the cheapest passing load of each material. Margin rank keeps the load with the most room
-              above both thresholds.
+              above both thresholds. Loads marked Energy have the pellet energy, with a thinner pattern than the
+              species count. That is where B, BB, BBB, and T usually land.
+            </p>
+            <p>
+              The hold is Head, Body, or Both. B through T use the head and neck. #6 through #1 that clear energy
+              and pattern use the front half, head and forward body. #7 and smaller that clear both use the center
+              of the bird. A load short on energy or pattern uses the head and neck. Turkey uses the head and neck.
             </p>
           </div>
         </details>

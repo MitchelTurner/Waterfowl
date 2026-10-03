@@ -32,6 +32,7 @@ function result(partial: {
     energyMarginFtLb: 1,
     hitMargin: 10,
     marginScore: 1.2,
+    aim: 'both',
   };
 }
 

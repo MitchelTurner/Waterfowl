@@ -26,6 +26,8 @@ Pattern percent is a Gaussian count. The choke table is the percent inside a 30-
 
 Duck, goose, and pheasant pattern counts use the low end of Tom Roster's 2016 lethality table. Turkey counts 100 pellets in a 10-inch circle, the usual pattern-board goal. Grouse pattern counts and every pellet-energy minimum are still placeholders. In dev mode the page shows a TODO banner until those values are sourced. Hevi-Shot and TSS are marked not safe for older guns; confirm that with manufacturer guidance before relying on it.
 
+Factory waterfowl loads run through T shot. A load that has the pellet energy and misses the pattern count stays on the card under “Energy is there,” and in the list with an Energy mark. The hold for each load is Head, Body, or Both: B through T, and anything short on energy or pattern, is the head and neck; #6 through #1 that clear both thresholds is the front half; #7 and smaller that clear both is the body. Turkey stays a head-and-neck hold.
+
 Lead is a density reference and is omitted for duck and goose. It is marked not legal for waterfowl.
 
 Seed prices carry a catalog date in `src/config/loads.ts`. They are not a live retail quote. Edits stay in the link.

@@ -1,3 +1,4 @@
+import { aimPoint } from '../config/aim';
 import { FACTORY_LOADS } from '../config/loads';
 import { materialById } from '../config/materials';
 import { speciesById } from '../config/species';
@@ -94,6 +95,12 @@ export function evaluate(load: FactoryLoad, inputs: EvaluationInputs): LoadResul
       },
       species,
     ),
+    aim: aimPoint({
+      speciesId: species.id,
+      shotSize: load.shotSize,
+      meetsEnergy: threshold.meetsEnergy,
+      meetsPattern: threshold.meetsPattern,
+    }),
   };
 }
 
@@ -109,6 +116,11 @@ export interface Recommendation {
   options: LoadResult[];
   /** Set only when nothing passes. */
   closestMiss: LoadResult | null;
+  /**
+   * Largest shot size per material that has the energy and misses the pattern.
+   * Big waterfowl shot (through T) shows up here when the count is thin.
+   */
+  energyOnly: LoadResult[];
 }
 
 function missScore(
@@ -124,6 +136,18 @@ function missScore(
       ? Number.POSITIVE_INFINITY
       : result.expectedHits / species.minPatternHits;
   return Math.min(energyRatio, patternRatio);
+}
+
+function betterEnergyOnly(candidate: LoadResult, current: LoadResult): boolean {
+  const sizeDiff = diameterInches(candidate.load.shotSize) - diameterInches(current.load.shotSize);
+  if (sizeDiff !== 0) return sizeDiff > 0;
+  if (candidate.energyAtRangeFtLb !== current.energyAtRangeFtLb) {
+    return candidate.energyAtRangeFtLb > current.energyAtRangeFtLb;
+  }
+  if (candidate.costPerShell !== current.costPerShell) {
+    return candidate.costPerShell < current.costPerShell;
+  }
+  return candidate.load.id < current.load.id;
 }
 
 function betterPass(candidate: LoadResult, current: LoadResult, rankBy: RankBy): boolean {
@@ -148,10 +172,18 @@ export function recommend(
   rankBy: RankBy = 'price',
 ): Recommendation {
   const bestByMaterial = new Map<string, LoadResult>();
+  const energyByMaterial = new Map<string, LoadResult>();
   let closest: LoadResult | null = null;
   let closestScore = Number.NEGATIVE_INFINITY;
 
   for (const result of results) {
+    if (result.meetsEnergy && !result.meetsPattern) {
+      const currentEnergy = energyByMaterial.get(result.load.material);
+      if (currentEnergy === undefined || betterEnergyOnly(result, currentEnergy)) {
+        energyByMaterial.set(result.load.material, result);
+      }
+    }
+
     if (result.passes) {
       const current = bestByMaterial.get(result.load.material);
       if (current === undefined || betterPass(result, current, rankBy)) {
@@ -177,8 +209,15 @@ export function recommend(
     return a.costPerShell - b.costPerShell || a.load.label.localeCompare(b.load.label);
   });
 
+  const energyOnly = [...energyByMaterial.values()].sort((a, b) => {
+    const sizeDiff = diameterInches(b.load.shotSize) - diameterInches(a.load.shotSize);
+    if (sizeDiff !== 0) return sizeDiff;
+    return b.energyAtRangeFtLb - a.energyAtRangeFtLb || a.costPerShell - b.costPerShell;
+  });
+
   return {
     options,
     closestMiss: options.length === 0 ? closest : null,
+    energyOnly,
   };
 }

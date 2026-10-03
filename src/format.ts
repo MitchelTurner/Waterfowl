@@ -1,5 +1,11 @@
 import { materialById } from './config/materials';
-import type { Gauge, LoadResult, RankBy, ShotSize } from './types';
+import type { AimPoint, Gauge, LoadResult, RankBy, ShotSize } from './types';
+
+export function formatAim(aim: AimPoint): string {
+  if (aim === 'head') return 'Head';
+  if (aim === 'body') return 'Body';
+  return 'Both';
+}
 
 export function formatShotSize(size: ShotSize): string {
   return /^\d/.test(size) ? `#${size}` : size;

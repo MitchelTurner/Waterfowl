@@ -27,5 +27,8 @@ describe('choke guide', () => {
     expect(html).toContain('Explain');
     expect(html).toContain('cursor-help');
     expect(html).not.toContain('How to find out');
+    expect(html).toContain('Where to hold on a duck');
+    expect(html).toContain('BBB');
+    expect(html).toContain('Front half');
   });
 });

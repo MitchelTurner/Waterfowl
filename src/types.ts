@@ -37,6 +37,9 @@ export interface Material {
 
 export type RankBy = 'price' | 'margin';
 
+/** Where to hold on the bird for this shot size at the current range. */
+export type AimPoint = 'head' | 'body' | 'both';
+
 export interface Species {
   id: string;
   name: string;
@@ -84,6 +87,8 @@ export interface LoadResult {
   hitMargin: number;
   /** Lower of the energy and pattern ratios. 1 means right on the threshold. */
   marginScore: number;
+  /** Head, body, or both, from shot size plus the energy and pattern result. */
+  aim: AimPoint;
 }
 
 export interface EvaluationInputs {
